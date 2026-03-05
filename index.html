@@ -1,93 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-us">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Driving Game</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; overflow: hidden; }
-        canvas { background: #eee; border: 1px solid #000; display: block; margin: 0 auto; }
-        #start-btn { text-align: center; margin: 20px; }
-        #start { font-size: 30px; cursor: pointer; }
-    </style>
+  
+  
+  
+  <base href="https://cdn.jsdelivr.net/gh/genizy/dmad-poki@49b5ab6b987f5f3be58f9dae59c92e8fc1aab9b0/">
+  <script>
+  window.assgdd = {
+    "ancestorOrigins": {
+        "0": "https://games.poki.com",
+        "1": "https://poki.com"
+    },
+    "href": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com/cc1bc57a-e355-4696-97c2-097bf6188606/index.html?country=US&url_referrer=https%3A%2F%2Fpoki.com%2F&site_id=3&iso_lang=en&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdrive-mad&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=78%2C93%2C96%2C103%2C377%2C390%2C400%2C893%2C929%2C1126%2C1139%2C1140%2C1141%2C1143%2C1147%2C1163%2C1185%2C1190%2C1193%2C1197&special_condition=landing&game_id=f9564e4e-ef25-4e4b-ba67-cb11a1576bbd&game_version_id=cc1bc57a-e355-4696-97c2-097bf6188606&inspector=0",
+    "origin": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
+    "protocol": "https:",
+    "host": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
+    "hostname": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
+    "port": "",
+    "pathname": "/cc1bc57a-e355-4696-97c2-097bf6188606/index.html",
+    "search": "?country=US&url_referrer=https%3A%2F%2Fpoki.com%2F&site_id=3&iso_lang=en&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdrive-mad&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=78%2C93%2C96%2C103%2C377%2C390%2C400%2C893%2C929%2C1126%2C1139%2C1140%2C1141%2C1143%2C1147%2C1163%2C1185%2C1190%2C1193%2C1197&special_condition=landing&game_id=f9564e4e-ef25-4e4b-ba67-cb11a1576bbd&game_version_id=cc1bc57a-e355-4696-97c2-097bf6188606&inspector=0",
+    "hash": ""
+}
+  </script>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+  <title>Drive Mad</title>
+  <meta name="description" content="">
+  <meta name="google" content="notranslate">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <link rel="stylesheet" href="webapp/fancade.css">
+  <link rel="icon" href="webapp/favicon.ico">
+
+  <!-- POKI SDK -->
+  <script src="poki-sdk.js" ></script>
 </head>
-<body>
-    <div id="start-btn"><div id="start">▶ START GAME</div></div>
-    <canvas id="gameCanvas" width="800" height="400"></canvas>
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        let car, obstacles = [], score = 0, gameInterval;
-        const carWidth = 50, carHeight = 100;
 
-        function init() {
-            car = { x: canvas.width / 2 - carWidth / 2, y: canvas.height - carHeight - 10, width: carWidth, height: carHeight };
-            document.getElementById('start-btn').style.display = 'none';
-            gameInterval = setInterval(updateGame, 20);
-            generateObstacles();
-        }
+<body id="body">
 
-        function updateGame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawCar();
-            drawObstacles();
-            checkCollision();
-            score++;
-            ctx.font = '20px Arial';
-            ctx.fillText('Score: ' + score, 10, 20);
-        }
+  <!-- Modal dialog div -->
+  <div id="modal_parent">
+    <div id="modal_content">
+      <span id="modal_close_button">&times;</span>
+      <div id="store_link_modal_content" class="modal_inner"></div>
+      <div id="share_file_modal_content" class="modal_inner"></div>
+    </div>
+  </div>
 
-        function drawCar() {
-            ctx.fillStyle = 'blue';
-            ctx.fillRect(car.x, car.y, car.width, car.height);
-        }
+  <!-- 
+      Game canvas and overlay. Emscripten makes some assumptions about how the canvas is positioned in order
+      to translate document to game coordinates
+    -->
+  <div id="canvas_border" class="emscripten_border">
+    <div id="play_content" class="middle center">
+      <div class="edge">
+        <div class="box">
+          <div class="black">
+            <img src="webapp/cover.jpg" class="cover">
+            <p class="title">Drive Mad</p>
+            <p class="author">Fancade</p>
+          </div>
+        </div>
+      </div>
+      <div id="progress_or_play">
+        <progress id="progress" class="loading" value="0" max="100"></progress>
+      </div>
+      <p class="description"></p>
+    </div>
+    <canvas class="emscripten" id="canvas" tabindex=-1>
+    </canvas>
+    <div id="gradient"></div>
+    <div id="webview_content"></div>
+  </div>
 
-        function generateObstacles() {
-            if (Math.random() < 0.5) {
-                let obstacle = { x: Math.random() * (canvas.width - 50), y: 0, width: 50, height: 50 };
-                obstacles.push(obstacle);
-            }
-            for (let i = 0; i < obstacles.length; i++) {
-                obstacles[i].y += 2;
-                if (obstacles[i].y > canvas.height) {
-                    obstacles.splice(i, 1);
-                    i--;
-                    score += 10;
-                }
-            }
-            setTimeout(generateObstacles, 2000);
-        }
+  <!-- Manual JS, Called from WASM -->
+  <script type="text/javascript" src="webapp/source_min.js"></script>
 
-        function drawObstacles() {
-            ctx.fillStyle = 'red';
-            for (let obstacle of obstacles) {
-                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-            }
-        }
-
-        function checkCollision() {
-            for (let obstacle of obstacles) {
-                if (car.x < obstacle.x + obstacle.width &&
-                    car.x + car.width > obstacle.x &&
-                    car.y < obstacle.y + obstacle.height &&
-                    car.y + car.height > obstacle.y) {
-                    clearInterval(gameInterval);
-                    alert('Game Over! Final Score: ' + score);
-                    document.location.reload();
-                }
-            }
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft' && car.x > 0) {
-                car.x -= 15;
-            }
-            if (e.key === 'ArrowRight' && car.x < canvas.width - car.width) {
-                car.x += 15;
-            }
-        });
-
-        document.getElementById('start').addEventListener('click', init);
-    </script>
+  <!-- Auto generated JS -->
+  <script type="text/javascript" src="webapp/index.js"></script>
 </body>
+
 </html>
