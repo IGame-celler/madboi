@@ -1,20 +1,93 @@
 <!DOCTYPE html>
-<html lang="en-us">
-
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
-  <title>Drive Mad</title>
-  <meta name="description" content="">
-  <meta name="google" content="notranslate">
-
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driving Game</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; overflow: hidden; }
+        canvas { background: #eee; border: 1px solid #000; display: block; margin: 0 auto; }
+        #start-btn { text-align: center; margin: 20px; }
+        #start { font-size: 30px; cursor: pointer; }
+    </style>
 </head>
+<body>
+    <div id="start-btn"><div id="start">▶ START GAME</div></div>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let car, obstacles = [], score = 0, gameInterval;
+        const carWidth = 50, carHeight = 100;
 
-<body id="body">
-  <h1>Drive Mad</h1>
-  <p>Game page coming soon!</p>
+        function init() {
+            car = { x: canvas.width / 2 - carWidth / 2, y: canvas.height - carHeight - 10, width: carWidth, height: carHeight };
+            document.getElementById('start-btn').style.display = 'none';
+            gameInterval = setInterval(updateGame, 20);
+            generateObstacles();
+        }
+
+        function updateGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawCar();
+            drawObstacles();
+            checkCollision();
+            score++;
+            ctx.font = '20px Arial';
+            ctx.fillText('Score: ' + score, 10, 20);
+        }
+
+        function drawCar() {
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(car.x, car.y, car.width, car.height);
+        }
+
+        function generateObstacles() {
+            if (Math.random() < 0.5) {
+                let obstacle = { x: Math.random() * (canvas.width - 50), y: 0, width: 50, height: 50 };
+                obstacles.push(obstacle);
+            }
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].y += 2;
+                if (obstacles[i].y > canvas.height) {
+                    obstacles.splice(i, 1);
+                    i--;
+                    score += 10;
+                }
+            }
+            setTimeout(generateObstacles, 2000);
+        }
+
+        function drawObstacles() {
+            ctx.fillStyle = 'red';
+            for (let obstacle of obstacles) {
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            }
+        }
+
+        function checkCollision() {
+            for (let obstacle of obstacles) {
+                if (car.x < obstacle.x + obstacle.width &&
+                    car.x + car.width > obstacle.x &&
+                    car.y < obstacle.y + obstacle.height &&
+                    car.y + car.height > obstacle.y) {
+                    clearInterval(gameInterval);
+                    alert('Game Over! Final Score: ' + score);
+                    document.location.reload();
+                }
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' && car.x > 0) {
+                car.x -= 15;
+            }
+            if (e.key === 'ArrowRight' && car.x < canvas.width - car.width) {
+                car.x += 15;
+            }
+        });
+
+        document.getElementById('start').addEventListener('click', init);
+    </script>
 </body>
-
 </html>
