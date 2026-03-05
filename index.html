@@ -1,269 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-us">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drive Mad - Play Now</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  
+  
+  
+  <base href="https://cdn.jsdelivr.net/gh/genizy/dmad-poki@49b5ab6b987f5f3be58f9dae59c92e8fc1aab9b0/">
+  <script>
+  window.assgdd = {
+    "ancestorOrigins": {
+        "0": "https://games.poki.com",
+        "1": "https://poki.com"
+    },
+    "href": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com/cc1bc57a-e355-4696-97c2-097bf6188606/index.html?country=US&url_referrer=https%3A%2F%2Fpoki.com%2F&site_id=3&iso_lang=en&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdrive-mad&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=78%2C93%2C96%2C103%2C377%2C390%2C400%2C893%2C929%2C1126%2C1139%2C1140%2C1141%2C1143%2C1147%2C1163%2C1185%2C1190%2C1193%2C1197&special_condition=landing&game_id=f9564e4e-ef25-4e4b-ba67-cb11a1576bbd&game_version_id=cc1bc57a-e355-4696-97c2-097bf6188606&inspector=0",
+    "origin": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
+    "protocol": "https:",
+    "host": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
+    "hostname": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
+    "port": "",
+    "pathname": "/cc1bc57a-e355-4696-97c2-097bf6188606/index.html",
+    "search": "?country=US&url_referrer=https%3A%2F%2Fpoki.com%2F&site_id=3&iso_lang=en&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdrive-mad&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=78%2C93%2C96%2C103%2C377%2C390%2C400%2C893%2C929%2C1126%2C1139%2C1140%2C1141%2C1143%2C1147%2C1163%2C1185%2C1190%2C1193%2C1197&special_condition=landing&game_id=f9564e4e-ef25-4e4b-ba67-cb11a1576bbd&game_version_id=cc1bc57a-e355-4696-97c2-097bf6188606&inspector=0",
+    "hash": ""
+}
+  </script>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+  <title>Drive Mad</title>
+  <meta name="description" content="">
+  <meta name="google" content="notranslate">
 
-        .container {
-            text-align: center;
-            z-index: 10;
-        }
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <link rel="stylesheet" href="webapp/fancade.css">
+  <link rel="icon" href="webapp/favicon.ico">
 
-        .start-screen {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            max-width: 500px;
-        }
-
-        .start-screen.hidden {
-            display: none;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 3em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .game-icon {
-            width: 150px;
-            height: 150px;
-            margin: 30px auto;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 80px;
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-            border: 3px solid white;
-        }
-
-        .game-icon:hover {
-            transform: scale(1.1);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.6);
-        }
-
-        .game-icon:active {
-            transform: scale(0.95);
-        }
-
-        .description {
-            color: #666;
-            margin: 20px 0;
-            font-size: 1.1em;
-            line-height: 1.6;
-        }
-
-        .play-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.2em;
-            border-radius: 50px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-            font-weight: bold;
-        }
-
-        .play-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 7px 25px rgba(102, 126, 234, 0.6);
-        }
-
-        .play-button:active {
-            transform: translateY(0);
-        }
-
-        .game-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .game-container.hidden {
-            display: none;
-        }
-
-        #gameCanvas {
-            border: 3px solid #333;
-            border-radius: 10px;
-            background: #f0f0f0;
-            display: block;
-            margin: auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .game-info {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 15px 30px;
-            border-radius: 10px;
-            color: #333;
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-
-        .back-button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 30px;
-            font-size: 1em;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            margin-top: 10px;
-        }
-
-        .back-button:hover {
-            background: #764ba2;
-        }
-    </style>
+  <!-- POKI SDK -->
+  <script src="poki-sdk.js" ></script>
 </head>
-<body>
-    <!-- Start Screen -->
-    <div class="start-screen" id="startScreen">
-        <h1>🏎️ DRIVE MAD</h1>
-        <div class="game-icon" id="gameIcon">🏎️</div>
-        <p class="description">
-            Navigate through 350 challenging levels!<br>
-            Use arrow keys to move left and right.
-        </p>
-        <button class="play-button" id="playButton">PLAY NOW</button>
-    </div>
 
-    <!-- Game Container -->
-    <div class="game-container hidden" id="gameContainer">
-        <div class="game-info">
-            <span id="levelDisplay">Level: 1/350</span>
+<body id="body">
+
+  <!-- Modal dialog div -->
+  <div id="modal_parent">
+    <div id="modal_content">
+      <span id="modal_close_button">&times;</span>
+      <div id="store_link_modal_content" class="modal_inner"></div>
+      <div id="share_file_modal_content" class="modal_inner"></div>
+    </div>
+  </div>
+
+  <!-- 
+      Game canvas and overlay. Emscripten makes some assumptions about how the canvas is positioned in order
+      to translate document to game coordinates
+    -->
+  <div id="canvas_border" class="emscripten_border">
+    <div id="play_content" class="middle center">
+      <div class="edge">
+        <div class="box">
+          <div class="black">
+            <img src="webapp/cover.jpg" class="cover">
+            <p class="title">Drive Mad</p>
+            <p class="author">Fancade</p>
+          </div>
         </div>
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <button class="back-button" id="backButton">← Back to Menu</button>
+      </div>
+      <div id="progress_or_play">
+        <progress id="progress" class="loading" value="0" max="100"></progress>
+      </div>
+      <p class="description"></p>
     </div>
+    <canvas class="emscripten" id="canvas" tabindex=-1>
+    </canvas>
+    <div id="gradient"></div>
+    <div id="webview_content"></div>
+  </div>
 
-    <script>
-        const startScreen = document.getElementById('startScreen');
-        const gameContainer = document.getElementById('gameContainer');
-        const gameCanvas = document.getElementById('gameCanvas');
-        const playButton = document.getElementById('playButton');
-        const backButton = document.getElementById('backButton');
-        const gameIcon = document.getElementById('gameIcon');
-        const levelDisplay = document.getElementById('levelDisplay');
-        const ctx = gameCanvas.getContext('2d');
+  <!-- Manual JS, Called from WASM -->
+  <script type="text/javascript" src="webapp/source_min.js"></script>
 
-        const levels = 350;
-        let currentLevel = 1;
-        let gameRunning = false;
-
-        let player = {
-            x: gameCanvas.width / 2,
-            y: gameCanvas.height - 50,
-            width: 30,
-            height: 30,
-            color: 'blue',
-            gravity: 0.5,
-            velocityY: 0,
-            friction: 0
-        };
-
-        let keys = {
-            left: false,
-            right: false
-        };
-
-        function startGame() {
-            currentLevel = 1;
-            player.y = gameCanvas.height - 50;
-            player.velocityY = 0;
-            player.x = gameCanvas.width / 2;
-            
-            startScreen.classList.add('hidden');
-            gameContainer.classList.remove('hidden');
-            gameRunning = true;
-            gameLoop();
-        }
-
-        function backToMenu() {
-            gameRunning = false;
-            startScreen.classList.remove('hidden');
-            gameContainer.classList.add('hidden');
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') keys.left = true;
-            if (e.key === 'ArrowRight') keys.right = true;
-        });
-
-        window.addEventListener('keyup', (e) => {
-            if (e.key === 'ArrowLeft') keys.left = false;
-            if (e.key === 'ArrowRight') keys.right = false;
-        });
-
-        playButton.addEventListener('click', startGame);
-        gameIcon.addEventListener('click', startGame);
-        backButton.addEventListener('click', backToMenu);
-
-        function update() {
-            player.velocityY += player.gravity;
-            player.y += player.velocityY;
-
-            if (keys.left) player.x -= 5;
-            if (keys.right) player.x += 5;
-
-            if (player.x < 0) player.x = 0;
-            if (player.x + player.width > gameCanvas.width) player.x = gameCanvas.width - player.width;
-
-            if (player.y > gameCanvas.height) {
-                player.y = gameCanvas.height - 50;
-                player.velocityY = 0;
-                currentLevel = Math.min(currentLevel + 1, levels);
-                levelDisplay.textContent = `Level: ${currentLevel}/350`;
-            }
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-            ctx.fillStyle = player.color;
-            ctx.fillRect(player.x, player.y, player.width, player.height);
-
-            // Draw level info on canvas
-            ctx.fillStyle = '#333';
-            ctx.font = 'bold 20px Arial';
-            ctx.fillText(`Level ${currentLevel}`, 20, 30);
-        }
-
-        function gameLoop() {
-            if (gameRunning) {
-                update();
-                draw();
-                requestAnimationFrame(gameLoop);
-            }
-        }
-    </script>
+  <!-- Auto generated JS -->
+  <script type="text/javascript" src="webapp/index.js"></script>
 </body>
+
 </html>
