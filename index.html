@@ -1,85 +1,281 @@
 <!DOCTYPE html>
-<html lang="en-us">
 
+<html>
 <head>
-  
-  
-  
-  <base href="https://cdn.jsdelivr.net/gh/genizy/dmad-poki@49b5ab6b987f5f3be58f9dae59c92e8fc1aab9b0/">
-  <script>
-  window.assgdd = {
-    "ancestorOrigins": {
-        "0": "https://games.poki.com",
-        "1": "https://poki.com"
-    },
-    "href": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com/cc1bc57a-e355-4696-97c2-097bf6188606/index.html?country=US&url_referrer=https%3A%2F%2Fpoki.com%2F&site_id=3&iso_lang=en&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdrive-mad&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=78%2C93%2C96%2C103%2C377%2C390%2C400%2C893%2C929%2C1126%2C1139%2C1140%2C1141%2C1143%2C1147%2C1163%2C1185%2C1190%2C1193%2C1197&special_condition=landing&game_id=f9564e4e-ef25-4e4b-ba67-cb11a1576bbd&game_version_id=cc1bc57a-e355-4696-97c2-097bf6188606&inspector=0",
-    "origin": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
-    "protocol": "https:",
-    "host": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
-    "hostname": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
-    "port": "",
-    "pathname": "/cc1bc57a-e355-4696-97c2-097bf6188606/index.html",
-    "search": "?country=US&url_referrer=https%3A%2F%2Fpoki.com%2F&site_id=3&iso_lang=en&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdrive-mad&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=78%2C93%2C96%2C103%2C377%2C390%2C400%2C893%2C929%2C1126%2C1139%2C1140%2C1141%2C1143%2C1147%2C1163%2C1185%2C1190%2C1193%2C1197&special_condition=landing&game_id=f9564e4e-ef25-4e4b-ba67-cb11a1576bbd&game_version_id=cc1bc57a-e355-4696-97c2-097bf6188606&inspector=0",
-    "hash": ""
+<meta charset="utf-8">
+<title>Drive Mad 250</title>
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<style>
+
+body{
+margin:0;
+background:#111;
+color:white;
+font-family:Arial;
+display:flex;
+flex-direction:column;
+align-items:center;
 }
-  </script>
-  <meta charset="utf-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-  <title>Drive Mad</title>
-  <meta name="description" content="">
-  <meta name="google" content="notranslate">
+h2{
+margin:10px;
+}
 
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <link rel="stylesheet" href="webapp/fancade.css">
-  <link rel="icon" href="webapp/favicon.ico">
+canvas{
+border:2px solid #444;
+}
 
-  <!-- POKI SDK -->
-  <script src="poki-sdk.js" ></script>
+#controls{
+margin-top:10px;
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+justify-content:center;
+}
+
+button{
+padding:6px 10px;
+cursor:pointer;
+background:#333;
+color:white;
+border:none;
+}
+
+button:hover{
+background:#555;
+}
+
+#levelSelect{
+display:none;
+max-width:700px;
+flex-wrap:wrap;
+gap:4px;
+margin-top:10px;
+}
+
+#levelSelect button{
+width:40px;
+}
+
+#editor{
+display:none;
+margin-top:15px;
+background:#222;
+padding:10px;
+border:1px solid #555;
+}
+
+</style>
+
 </head>
 
-<body id="body">
+<body>
 
-  <!-- Modal dialog div -->
-  <div id="modal_parent">
-    <div id="modal_content">
-      <span id="modal_close_button">&times;</span>
-      <div id="store_link_modal_content" class="modal_inner"></div>
-      <div id="share_file_modal_content" class="modal_inner"></div>
-    </div>
-  </div>
+<h2>Drive Mad – 250 Levels</h2>
 
-  <!-- 
-      Game canvas and overlay. Emscripten makes some assumptions about how the canvas is positioned in order
-      to translate document to game coordinates
-    -->
-  <div id="canvas_border" class="emscripten_border">
-    <div id="play_content" class="middle center">
-      <div class="edge">
-        <div class="box">
-          <div class="black">
-            <img src="webapp/cover.jpg" class="cover">
-            <p class="title">Drive Mad</p>
-            <p class="author">Fancade</p>
-          </div>
-        </div>
-      </div>
-      <div id="progress_or_play">
-        <progress id="progress" class="loading" value="0" max="100"></progress>
-      </div>
-      <p class="description"></p>
-    </div>
-    <canvas class="emscripten" id="canvas" tabindex=-1>
-    </canvas>
-    <div id="gradient"></div>
-    <div id="webview_content"></div>
-  </div>
+<canvas id="canvas" width="960" height="600"></canvas>
 
-  <!-- Manual JS, Called from WASM -->
-  <script type="text/javascript" src="webapp/source_min.js"></script>
+<div id="controls">
 
-  <!-- Auto generated JS -->
-  <script type="text/javascript" src="webapp/index.js"></script>
+<button onclick="toggleLevels()">Level Select</button> <button onclick="toggleEditor()">Level Editor</button>
+
+</div>
+
+<div id="levelSelect"></div>
+
+<div id="editor">
+
+<h3>Level Editor</h3>
+
+X <input id="ex" type="number" value="10">
+Y <input id="ey" type="number" value="0">
+
+<br><br>
+
+<button onclick="addRamp()">Ramp</button> <button onclick="addPlatform()">Platform</button> <button onclick="addGap()">Gap</button>
+
+<br><br>
+
+<button onclick="exportLevel()">Export JSON</button>
+
+</div>
+
+<script>
+
+/* ---------------------------
+LEVEL SELECTOR
+--------------------------- */
+
+const levelBox=document.getElementById("levelSelect");
+
+for(let i=1;i<=250;i++){
+
+let b=document.createElement("button");
+
+b.textContent=i;
+
+b.onclick=()=>loadLevel(i);
+
+levelBox.appendChild(b);
+
+}
+
+function toggleLevels(){
+
+levelBox.style.display=
+levelBox.style.display==="flex"?"none":"flex";
+
+}
+
+/* ---------------------------
+LEVEL EDITOR
+--------------------------- */
+
+let editObjects=[];
+
+function toggleEditor(){
+
+let e=document.getElementById("editor");
+
+e.style.display=
+e.style.display==="block"?"none":"block";
+
+}
+
+function addRamp(){
+
+editObjects.push({
+type:"ramp",
+x:Number(ex.value),
+y:Number(ey.value),
+angle:30
+});
+
+}
+
+function addPlatform(){
+
+editObjects.push({
+type:"platform",
+x:Number(ex.value),
+y:Number(ey.value),
+length:6
+});
+
+}
+
+function addGap(){
+
+editObjects.push({
+type:"gap",
+x:Number(ex.value),
+width:6
+});
+
+}
+
+function exportLevel(){
+
+let level={
+id:999,
+objects:[
+{type:"start",x:0,y:0},
+...editObjects,
+{type:"goal",x:30,y:0}
+]
+};
+
+alert(JSON.stringify(level,null,2));
+
+}
+
+/* ---------------------------
+CUSTOM LEVELS 201–250
+--------------------------- */
+
+const CUSTOM_LEVELS=[];
+
+for(let i=201;i<=250;i++){
+
+CUSTOM_LEVELS.push({
+
+id:i,
+name:"Custom "+i,
+
+objects:[
+
+{type:"start",x:0,y:0},
+
+{type:"ramp",x:6,y:0,angle:20+(i%20)},
+
+{type:"gap",x:12,width:4+(i%8)},
+
+{type:"platform",x:18,y:2,length:6},
+
+{type:"goal",x:30,y:0}
+
+]
+
+});
+
+}
+
+/* ---------------------------
+LOAD GAME ENGINE
+--------------------------- */
+
+var Module={
+canvas:document.getElementById("canvas")
+};
+
+function loadScript(src){
+
+let s=document.createElement("script");
+
+s.src=src;
+
+document.body.appendChild(s);
+
+}
+
+loadScript("https://cdn.jsdelivr.net/gh/genizy/dmad-poki/webapp/source_min.js");
+loadScript("https://cdn.jsdelivr.net/gh/genizy/dmad-poki/webapp/index.js");
+
+/* ---------------------------
+LEVEL OVERRIDE
+--------------------------- */
+
+function loadLevel(id){
+
+window.currentLevel=id;
+
+}
+
+setTimeout(()=>{
+
+if(window.getLevel){
+
+const original=window.getLevel;
+
+window.getLevel=function(id){
+
+if(id<=200){
+return original(id);
+}
+
+return CUSTOM_LEVELS.find(l=>l.id===id);
+
+};
+
+}
+
+window.TOTAL_LEVELS=250;
+
+},3000);
+
+</script>
+
 </body>
-
 </html>
