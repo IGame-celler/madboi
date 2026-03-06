@@ -2,52 +2,56 @@
 <html lang="en-us">
 <head>
 <meta charset="utf-8">
-<title>Drive Mad – Full 250 Levels</title>
+<title>Drive Mad – 250 Levels (External Selector)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<link rel="stylesheet" href="webapp/fancade.css">
 <link rel="icon" href="webapp/favicon.ico">
+<link rel="stylesheet" href="webapp/fancade.css">
 
 <style>
+/* Full-page background using original game cover */
 body {
-  background-color: #000;
-  color: #fff;
+  margin: 0;
+  padding: 0;
+  background: url('webapp/cover.jpg') no-repeat center center fixed;
+  background-size: cover;
   font-family: sans-serif;
+  color: #fff;
   text-align: center;
 }
 
-h2 {
-  margin: 10px 0;
-}
-
+/* Semi-transparent overlay for level select */
 #level-select {
+  background: rgba(0,0,0,0.6);
+  padding: 15px;
+  border-radius: 10px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
   gap: 8px;
-  padding: 10px;
   max-width: 720px;
-  margin: 0 auto 20px;
+  margin: 15px auto;
 }
 
+/* Level buttons */
 #level-select button {
   height: 50px;
   font-size: 16px;
   font-weight: bold;
   border-radius: 4px;
-  border: 2px solid #111;
-  background-color: #222;
+  border: 2px solid #444;
+  background-color: #1c1c1c;
   color: #fff;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+#level-select button:hover:not(.locked) {
+  background-color: #555;
 }
 
 #level-select button.locked {
   background-color: #111;
   color: #555;
   cursor: not-allowed;
-}
-
-#level-select button:hover:not(.locked) {
-  background-color: #555;
 }
 
 /* Canvas container */
@@ -60,7 +64,6 @@ h2 {
 </head>
 
 <body>
-
 <h2>Drive Mad – Select Level</h2>
 <div id="level-select"></div>
 
@@ -79,13 +82,13 @@ h2 {
   const TOTAL_LEVELS = 250;
   const container = document.getElementById('level-select');
 
-  // Load highest unlocked from localStorage
+  // Highest unlocked level stored in localStorage
   let highestUnlocked = parseInt(localStorage.getItem('driveMadUnlocked') || '1');
 
   function createButton(level) {
     const btn = document.createElement('button');
     btn.textContent = level;
-    if(level <= highestUnlocked) {
+    if(level <= highestUnlocked){
       btn.disabled = false;
       btn.classList.remove('locked');
     } else {
@@ -94,13 +97,13 @@ h2 {
     }
 
     btn.onclick = () => {
-      if(level <= highestUnlocked) {
-        // Load level on original canvas
-        if(window.getLevel) window.getLevel(level);
+      if(level <= highestUnlocked && window.getLevel){
+        // Play level on original canvas
+        window.getLevel(level);
 
-        // Unlock next level after this one
+        // Unlock next level after current
         const next = level + 1;
-        if(next <= TOTAL_LEVELS && next > highestUnlocked) {
+        if(next <= TOTAL_LEVELS && next > highestUnlocked){
           highestUnlocked = next;
           localStorage.setItem('driveMadUnlocked', highestUnlocked);
           updateButtons();
@@ -111,10 +114,10 @@ h2 {
     return btn;
   }
 
-  function updateButtons() {
+  function updateButtons(){
     container.querySelectorAll('button').forEach(btn => {
       const level = parseInt(btn.textContent);
-      if(level <= highestUnlocked) {
+      if(level <= highestUnlocked){
         btn.disabled = false;
         btn.classList.remove('locked');
       } else {
@@ -124,8 +127,8 @@ h2 {
     });
   }
 
-  function initLevelSelect() {
-    for(let i=1;i<=TOTAL_LEVELS;i++) {
+  function initLevelSelect(){
+    for(let i=1;i<=TOTAL_LEVELS;i++){
       container.appendChild(createButton(i));
     }
   }
