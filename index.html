@@ -1,115 +1,124 @@
 <!DOCTYPE html>
 <html lang="en-us">
 <head>
-  <meta charset="utf-8">
-  <title>Drive Mad 250 Levels</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <link rel="stylesheet" href="webapp/fancade.css">
-  <link rel="icon" href="webapp/favicon.ico">
+<meta charset="utf-8">
+<title>Drive Mad 250 Levels</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<link rel="stylesheet" href="webapp/fancade.css">
+<link rel="icon" href="webapp/favicon.ico">
 
-  <!-- Poki SDK removed -->
-
-  <style>
-    /* Custom level select grid */
-    #custom-level-select {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-      gap: 8px;
-      padding: 10px;
-      max-width: 720px;
-      margin: 10px auto;
-    }
-    #custom-level-select button {
-      height: 50px;
-      font-size: 16px;
-      border-radius: 5px;
-      border: 2px solid #222;
-      background: #444;
-      color: #fff;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    #custom-level-select button.locked {
-      background: #222;
-      color: #888;
-      cursor: not-allowed;
-    }
-    #custom-level-select button:hover:not(.locked) {
-      background: #666;
-    }
-  </style>
+<style>
+/* Custom level select mimicking original grid */
+#custom-level-select {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+  gap: 8px;
+  padding: 10px;
+  max-width: 700px;
+  margin: 10px auto;
+}
+#custom-level-select button {
+  height: 50px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 4px;
+  border: 2px solid #111;
+  background-color: #222;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+#custom-level-select button.locked {
+  background-color: #111;
+  color: #555;
+  cursor: not-allowed;
+}
+#custom-level-select button:hover:not(.locked) {
+  background-color: #555;
+}
+h2 {
+  text-align:center;
+  color:#fff;
+  font-family: sans-serif;
+}
+body {
+  background-color:#000;
+}
+</style>
 </head>
 <body>
 
-  <div id="canvas_border" class="emscripten_border">
-    <canvas class="emscripten" id="canvas" tabindex=-1></canvas>
-    <div id="gradient"></div>
-    <div id="webview_content"></div>
-  </div>
+<!-- Game Canvas -->
+<div id="canvas_border" class="emscripten_border">
+  <canvas class="emscripten" id="canvas" tabindex=-1></canvas>
+  <div id="gradient"></div>
+  <div id="webview_content"></div>
+</div>
 
-  <h2 style="text-align:center;">Select Level</h2>
-  <div id="custom-level-select"></div>
+<!-- Level Select -->
+<h2>Select Level</h2>
+<div id="custom-level-select"></div>
 
-  <!-- Manual JS, Called from WASM -->
-  <script type="text/javascript" src="webapp/source_min.js"></script>
-  <script type="text/javascript" src="webapp/index.js"></script>
+<!-- Original game scripts -->
+<script type="text/javascript" src="webapp/source_min.js"></script>
+<script type="text/javascript" src="webapp/index.js"></script>
 
-  <script>
-    (function(){
-      const LEVEL_COUNT = 250;
-      const container = document.getElementById('custom-level-select');
+<script>
+(function(){
+  const LEVEL_COUNT = 250;
+  const container = document.getElementById('custom-level-select');
 
-      // Load highest unlocked from localStorage
-      let highestUnlocked = parseInt(localStorage.getItem('driveMadUnlocked') || '1');
+  // Load highest unlocked from localStorage
+  let highestUnlocked = parseInt(localStorage.getItem('driveMadUnlocked') || '1');
 
-      function createLevelButton(level) {
-        const btn = document.createElement('button');
-        btn.textContent = level;
-        if(level <= highestUnlocked) {
-          btn.classList.remove('locked');
-          btn.disabled = false;
-        } else {
-          btn.classList.add('locked');
-          btn.disabled = true;
-        }
-        btn.onclick = () => {
-          if(level <= highestUnlocked) {
-            if(window.getLevel) window.getLevel(level);
-            // After finishing a level, unlock the next
-            const next = level + 1;
-            if(next <= LEVEL_COUNT && next > highestUnlocked) {
-              highestUnlocked = next;
-              localStorage.setItem('driveMadUnlocked', highestUnlocked);
-              updateButtons();
-            }
-          }
-        };
-        return btn;
-      }
-
-      function updateButtons() {
-        const buttons = container.querySelectorAll('button');
-        buttons.forEach(btn => {
-          const level = parseInt(btn.textContent);
-          if(level <= highestUnlocked) {
-            btn.disabled = false;
-            btn.classList.remove('locked');
-          } else {
-            btn.disabled = true;
-            btn.classList.add('locked');
-          }
-        });
-      }
-
-      function initLevelSelect() {
-        container.innerHTML = '';
-        for(let i = 1; i <= LEVEL_COUNT; i++) {
-          container.appendChild(createLevelButton(i));
+  function createLevelButton(level) {
+    const btn = document.createElement('button');
+    btn.textContent = level;
+    if(level <= highestUnlocked) {
+      btn.classList.remove('locked');
+      btn.disabled = false;
+    } else {
+      btn.classList.add('locked');
+      btn.disabled = true;
+    }
+    btn.onclick = () => {
+      if(level <= highestUnlocked) {
+        if(window.getLevel) window.getLevel(level);
+        // Unlock next level after finishing
+        const next = level + 1;
+        if(next <= LEVEL_COUNT && next > highestUnlocked) {
+          highestUnlocked = next;
+          localStorage.setItem('driveMadUnlocked', highestUnlocked);
+          updateButtons();
         }
       }
+    };
+    return btn;
+  }
 
-      initLevelSelect();
-    })();
-  </script>
+  function updateButtons() {
+    const buttons = container.querySelectorAll('button');
+    buttons.forEach(btn => {
+      const level = parseInt(btn.textContent);
+      if(level <= highestUnlocked) {
+        btn.disabled = false;
+        btn.classList.remove('locked');
+      } else {
+        btn.disabled = true;
+        btn.classList.add('locked');
+      }
+    });
+  }
+
+  function initLevelSelect() {
+    container.innerHTML = '';
+    for(let i=1;i<=LEVEL_COUNT;i++){
+      container.appendChild(createLevelButton(i));
+    }
+  }
+
+  initLevelSelect();
+})();
+</script>
 </body>
 </html>
