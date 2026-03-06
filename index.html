@@ -118,6 +118,7 @@ const WORLD_DEFS = [
 
 const LEVELS = {}; // { worldId: [ levelConfigs ] }
 
+// generate all levels at startup (256 total)
 function generateLevels() {
   WORLD_DEFS.forEach(worldDef => {
     const levels = [];
@@ -129,7 +130,6 @@ function generateLevels() {
     for (let i = 1; i <= levelCount; i++) {
       const baseLen = 2000 + i * 40;
       const obstacles = [];
-
       const baseX = 600 + i * 40;
 
       if (theme === "classic") {
@@ -294,7 +294,7 @@ function buildLevel(worldId, levelId) {
   });
   Composite.add(world, finishSensor);
 
-  // Car
+  // Car (classic Drive Mad style)
   const carX = 200;
   const carY = 320;
 
