@@ -79,7 +79,7 @@
   <script type="text/javascript" src="webapp/index.js"></script>
 
   <!-- ---------------------------
-       Patch: Add levels 201–250 with locked level select
+       Patch: Add levels 201–250 with visible level select
        --------------------------- -->
   <script>
     const CUSTOM_LEVELS = [];
@@ -96,7 +96,7 @@
       });
     }
 
-    let highestUnlocked = 200; // first locked level is 201
+    let highestUnlocked = 200;
 
     const levelSelectContainer = document.createElement('div');
     levelSelectContainer.id = 'customLevelSelect';
@@ -109,6 +109,10 @@
     levelSelectContainer.style.display = 'flex';
     levelSelectContainer.style.flexWrap = 'wrap';
     levelSelectContainer.style.gap = '4px';
+    levelSelectContainer.style.zIndex = 9999;
+    levelSelectContainer.style.maxHeight = '90vh';
+    levelSelectContainer.style.overflowY = 'auto';
+    levelSelectContainer.style.borderRadius = '6px';
     document.body.appendChild(levelSelectContainer);
 
     for (let i = 201; i <= 250; i++) {
@@ -161,6 +165,7 @@
 
       if (window.TOTAL_LEVELS) window.TOTAL_LEVELS = 250;
 
+      // Unlock the first new level immediately
       updateLevelUnlocks(highestUnlocked);
     }, 3000);
   </script>
