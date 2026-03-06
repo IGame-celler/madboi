@@ -79,95 +79,89 @@
   <script type="text/javascript" src="webapp/index.js"></script>
 
   <!-- ---------------------------
-       Patch: Add levels 201–250 with visible level select
+       Patch: Add levels 201–250 into normal level select
        --------------------------- -->
   <script>
-    const CUSTOM_LEVELS = [];
-    for (let i = 201; i <= 250; i++) {
-      CUSTOM_LEVELS.push({
-        id: i,
-        objects: [
-          { type: "start", x: 0, y: 0 },
-          { type: "ramp", x: 6, y: 0, angle: 20 + (i % 20) },
-          { type: "gap", x: 12, width: 4 + (i % 8) },
-          { type: "platform", x: 18, y: 2, length: 6 },
-          { type: "goal", x: 30, y: 0 }
-        ]
-      });
-    }
-
-    let highestUnlocked = 200;
-
-    const levelSelectContainer = document.createElement('div');
-    levelSelectContainer.id = 'customLevelSelect';
-    levelSelectContainer.style.position = 'absolute';
-    levelSelectContainer.style.top = '10px';
-    levelSelectContainer.style.right = '10px';
-    levelSelectContainer.style.background = '#222';
-    levelSelectContainer.style.padding = '10px';
-    levelSelectContainer.style.border = '1px solid #555';
-    levelSelectContainer.style.display = 'flex';
-    levelSelectContainer.style.flexWrap = 'wrap';
-    levelSelectContainer.style.gap = '4px';
-    levelSelectContainer.style.zIndex = 9999;
-    levelSelectContainer.style.maxHeight = '90vh';
-    levelSelectContainer.style.overflowY = 'auto';
-    levelSelectContainer.style.borderRadius = '6px';
-    document.body.appendChild(levelSelectContainer);
-
-    for (let i = 201; i <= 250; i++) {
-      const btn = document.createElement('button');
-      btn.textContent = i;
-      btn.style.width = '40px';
-      btn.disabled = true;
-      btn.style.cursor = 'not-allowed';
-      btn.onclick = () => {
-        if (window.getLevel) window.getLevel(i);
-      };
-      levelSelectContainer.appendChild(btn);
-    }
-
-    function updateLevelUnlocks(lastBeaten) {
-      highestUnlocked = Math.max(highestUnlocked, lastBeaten);
-      const buttons = levelSelectContainer.querySelectorAll('button');
-      buttons.forEach(btn => {
-        const levelId = Number(btn.textContent);
-        if (levelId <= highestUnlocked + 1) {
-          btn.disabled = false;
-          btn.style.cursor = 'pointer';
-        } else {
-          btn.disabled = true;
-          btn.style.cursor = 'not-allowed';
-        }
-      });
-    }
-
-    setTimeout(() => {
-      if (window.getLevel) {
-        const originalGetLevel = window.getLevel;
-        window.getLevel = function(levelId) {
-          if (levelId <= 200) return originalGetLevel(levelId);
-
-          const levelData = CUSTOM_LEVELS.find(l => l.id === levelId);
-          if (levelData && !levelData._patched) {
-            levelData._patched = true;
-
-            const oldGoal = levelData.onGoalReached || function() {};
-            levelData.onGoalReached = function() {
-              highestUnlocked = Math.max(highestUnlocked, levelId);
-              updateLevelUnlocks(levelId);
-              oldGoal();
-            };
-          }
-          return levelData;
-        };
+  (function() {
+      const CUSTOM_LEVELS = [];
+      for (let i = 201; i <= 250; i++) {
+          CUSTOM_LEVELS.push({
+              id: i,
+              objects: [
+                  { type: "start", x: 0, y: 0 },
+                  { type: "ramp", x: 6, y: 0, angle: 20 + (i % 20) },
+                  { type: "gap", x: 12, width: 4 + (i % 8) },
+                  { type: "platform", x: 18, y: 2, length: 6 },
+                  { type: "goal", x: 30, y: 0 }
+              ]
+          });
       }
 
-      if (window.TOTAL_LEVELS) window.TOTAL_LEVELS = 250;
+      let highestUnlocked = 200; // Level 201 locked until level 200 beaten
 
-      // Unlock the first new level immediately
-      updateLevelUnlocks(highestUnlocked);
-    }, 3000);
+      function addCustomLevelsToSelect() {
+          if (!window.LEVEL_SELECT_CONTAINER) {
+              setTimeout(addCustomLevelsToSelect, 500);
+              return;
+          }
+          const container = window.LEVEL_SELECT_CONTAINER;
+
+          CUSTOM_LEVELS.forEach(level => {
+              const btn = document.createElement('button');
+              btn.textContent = level.id;
+              btn.disabled = true;
+              btn.style.cursor = 'not-allowed';
+              btn.onclick = () => {
+                  if (window.getLevel) window.getLevel(level.id);
+              };
+              container.appendChild(btn);
+              level._btn = btn;
+          });
+
+          updateLevelUnlocks(highestUnlocked);
+      }
+
+      function updateLevelUnlocks(lastBeaten) {
+          highestUnlocked = Math.max(highestUnlocked, lastBeaten);
+          CUSTOM_LEVELS.forEach(level => {
+              if (level.id <= highestUnlocked + 1) {
+                  level._btn.disabled = false;
+                  level._btn.style.cursor = 'pointer';
+              } else {
+                  level._btn.disabled = true;
+                  level._btn.style.cursor = 'not-allowed';
+              }
+          });
+      }
+
+      setTimeout(() => {
+          if (window.getLevel) {
+              const originalGetLevel = window.getLevel;
+              window.getLevel = function(levelId) {
+                  if (levelId <= 200) return originalGetLevel(levelId);
+
+                  const levelData = CUSTOM_LEVELS.find(l => l.id === levelId);
+                  if (levelData && !levelData._patched) {
+                      levelData._patched = true;
+
+                      const oldGoal = levelData.onGoalReached || function() {};
+                      levelData.onGoalReached = function() {
+                          highestUnlocked = Math.max(highestUnlocked, levelId);
+                          updateLevelUnlocks(levelId);
+                          oldGoal();
+                      };
+                  }
+                  return levelData;
+              };
+          }
+
+          if (window.TOTAL_LEVELS) window.TOTAL_LEVELS = 250;
+
+          addCustomLevelsToSelect();
+
+      }, 3000);
+
+  })();
   </script>
 
 </body>
