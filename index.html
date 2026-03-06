@@ -79,13 +79,13 @@
   <script type="text/javascript" src="webapp/index.js"></script>
 
   <!-- ---------------------------
-       Patch: Add levels 201–250 into normal level select
+       Patch: Extend normal level select to 250 levels
        --------------------------- -->
   <script>
   (function() {
-      const CUSTOM_LEVELS = [];
+      const EXTRA_LEVELS = [];
       for (let i = 201; i <= 250; i++) {
-          CUSTOM_LEVELS.push({
+          EXTRA_LEVELS.push({
               id: i,
               objects: [
                   { type: "start", x: 0, y: 0 },
@@ -97,16 +97,16 @@
           });
       }
 
-      let highestUnlocked = 200; // Level 201 locked until level 200 beaten
+      let highestUnlocked = 200; // Level 201 locked until 200 beaten
 
-      function addCustomLevelsToSelect() {
+      function extendLevelSelect() {
           if (!window.LEVEL_SELECT_CONTAINER) {
-              setTimeout(addCustomLevelsToSelect, 500);
+              setTimeout(extendLevelSelect, 500);
               return;
           }
           const container = window.LEVEL_SELECT_CONTAINER;
 
-          CUSTOM_LEVELS.forEach(level => {
+          EXTRA_LEVELS.forEach(level => {
               const btn = document.createElement('button');
               btn.textContent = level.id;
               btn.disabled = true;
@@ -123,7 +123,7 @@
 
       function updateLevelUnlocks(lastBeaten) {
           highestUnlocked = Math.max(highestUnlocked, lastBeaten);
-          CUSTOM_LEVELS.forEach(level => {
+          EXTRA_LEVELS.forEach(level => {
               if (level.id <= highestUnlocked + 1) {
                   level._btn.disabled = false;
                   level._btn.style.cursor = 'pointer';
@@ -140,7 +140,7 @@
               window.getLevel = function(levelId) {
                   if (levelId <= 200) return originalGetLevel(levelId);
 
-                  const levelData = CUSTOM_LEVELS.find(l => l.id === levelId);
+                  const levelData = EXTRA_LEVELS.find(l => l.id === levelId);
                   if (levelData && !levelData._patched) {
                       levelData._patched = true;
 
@@ -151,13 +151,14 @@
                           oldGoal();
                       };
                   }
+
                   return levelData;
               };
           }
 
           if (window.TOTAL_LEVELS) window.TOTAL_LEVELS = 250;
 
-          addCustomLevelsToSelect();
+          extendLevelSelect();
 
       }, 3000);
 
