@@ -2,22 +2,33 @@
 <html lang="en-us">
 <head>
 <meta charset="utf-8">
-<title>Drive Mad 250 Levels</title>
+<title>Drive Mad – Full 250 Levels</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <link rel="stylesheet" href="webapp/fancade.css">
 <link rel="icon" href="webapp/favicon.ico">
 
 <style>
-/* Custom level select mimicking original grid */
-#custom-level-select {
+body {
+  background-color: #000;
+  color: #fff;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+h2 {
+  margin: 10px 0;
+}
+
+#level-select {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
   gap: 8px;
   padding: 10px;
-  max-width: 700px;
-  margin: 10px auto;
+  max-width: 720px;
+  margin: 0 auto 20px;
 }
-#custom-level-select button {
+
+#level-select button {
   height: 50px;
   font-size: 16px;
   font-weight: bold;
@@ -28,77 +39,80 @@
   cursor: pointer;
   transition: all 0.2s;
 }
-#custom-level-select button.locked {
+
+#level-select button.locked {
   background-color: #111;
   color: #555;
   cursor: not-allowed;
 }
-#custom-level-select button:hover:not(.locked) {
+
+#level-select button:hover:not(.locked) {
   background-color: #555;
 }
-h2 {
-  text-align:center;
-  color:#fff;
-  font-family: sans-serif;
-}
-body {
-  background-color:#000;
+
+/* Canvas container */
+#canvas_border {
+  width: 100%;
+  max-width: 720px;
+  margin: 10px auto;
 }
 </style>
 </head>
+
 <body>
 
-<!-- Game Canvas -->
+<h2>Drive Mad – Select Level</h2>
+<div id="level-select"></div>
+
 <div id="canvas_border" class="emscripten_border">
   <canvas class="emscripten" id="canvas" tabindex=-1></canvas>
   <div id="gradient"></div>
   <div id="webview_content"></div>
 </div>
 
-<!-- Level Select -->
-<h2>Select Level</h2>
-<div id="custom-level-select"></div>
-
 <!-- Original game scripts -->
-<script type="text/javascript" src="webapp/source_min.js"></script>
-<script type="text/javascript" src="webapp/index.js"></script>
+<script src="webapp/source_min.js"></script>
+<script src="webapp/index.js"></script>
 
 <script>
 (function(){
-  const LEVEL_COUNT = 250;
-  const container = document.getElementById('custom-level-select');
+  const TOTAL_LEVELS = 250;
+  const container = document.getElementById('level-select');
 
   // Load highest unlocked from localStorage
   let highestUnlocked = parseInt(localStorage.getItem('driveMadUnlocked') || '1');
 
-  function createLevelButton(level) {
+  function createButton(level) {
     const btn = document.createElement('button');
     btn.textContent = level;
     if(level <= highestUnlocked) {
-      btn.classList.remove('locked');
       btn.disabled = false;
+      btn.classList.remove('locked');
     } else {
-      btn.classList.add('locked');
       btn.disabled = true;
+      btn.classList.add('locked');
     }
+
     btn.onclick = () => {
       if(level <= highestUnlocked) {
+        // Load level on original canvas
         if(window.getLevel) window.getLevel(level);
-        // Unlock next level after finishing
+
+        // Unlock next level after this one
         const next = level + 1;
-        if(next <= LEVEL_COUNT && next > highestUnlocked) {
+        if(next <= TOTAL_LEVELS && next > highestUnlocked) {
           highestUnlocked = next;
           localStorage.setItem('driveMadUnlocked', highestUnlocked);
           updateButtons();
         }
       }
     };
+
     return btn;
   }
 
   function updateButtons() {
-    const buttons = container.querySelectorAll('button');
-    buttons.forEach(btn => {
+    container.querySelectorAll('button').forEach(btn => {
       const level = parseInt(btn.textContent);
       if(level <= highestUnlocked) {
         btn.disabled = false;
@@ -111,14 +125,14 @@ body {
   }
 
   function initLevelSelect() {
-    container.innerHTML = '';
-    for(let i=1;i<=LEVEL_COUNT;i++){
-      container.appendChild(createLevelButton(i));
+    for(let i=1;i<=TOTAL_LEVELS;i++) {
+      container.appendChild(createButton(i));
     }
   }
 
   initLevelSelect();
 })();
 </script>
+
 </body>
 </html>
