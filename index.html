@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Drive Mad 250 – Custom</title>
+<title>Drive Mad 250 – Matter.js Edition</title>
 <style>
   body {
     margin: 0;
@@ -11,189 +11,65 @@
     font-family: Arial, sans-serif;
     text-align: center;
   }
-  #ui {
+  #top-bar {
     padding: 10px;
   }
-  #gameCanvas, #levelCanvas {
-    display: block;
-    margin: 10px auto;
-    background: #222;
+  #game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
-  #game-info {
-    margin-top: 10px;
+  #gameCanvas {
+    background: #222;
+    border: 3px solid #444;
+    display: block;
+    margin-bottom: 10px;
+  }
+  #status {
+    margin-bottom: 10px;
+  }
+  #level-select {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 900px;
+    margin: 10px auto 20px;
+    justify-content: center;
+  }
+  .level-button {
+    width: 60px;
+    height: 60px;
+    margin: 5px;
+    border-radius: 14px;
+    background: #f7d13d;
+    border: 4px solid #000;
+    color: #000;
+    font-weight: bold;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #b89b2f;
+    transition: transform 0.05s, box-shadow 0.05s, background 0.1s;
+  }
+  .level-button:hover {
+    background: #ffdf4d;
+  }
+  .level-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #b89b2f;
   }
 </style>
 </head>
 <body>
 
-<div id="ui">
-  <h1>Drive Mad 250 – Custom</h1>
-  <p>Click a level tile to load it</p>
+<div id="top-bar">
+  <h1>Drive Mad 250 – Matter.js Edition</h1>
+  <p>Arrow keys: Left = reverse, Right = forward</p>
 </div>
 
-<canvas id="levelCanvas" width="900" height="700"></canvas>
-<canvas id="gameCanvas" width="900" height="200"></canvas>
-<div id="game-info">No level loaded yet.</div>
+<div id="game-container">
+  <canvas id="gameCanvas" width="900" height="400"></canvas>
+  <div id="status">No level loaded yet.</div>
+</div>
 
-<script>
-// ---------- LEVEL DATA ----------
-const LEVELS = [];
+<div id="level-select"></div>
 
-// Base 1–200 placeholder levels
-for (let i = 1; i <= 200; i++) {
-  LEVELS.push({
-    id: i,
-    name: "Level " + i,
-    length: 1000 + (i * 5), // just to vary something
-    difficulty: "base"
-  });
-}
-
-// Extra 201–250 with difficulty bands
-for (let id = 201; id <= 250; id++) {
-  let band = "medium";
-  if (id >= 221 && id <= 240) band = "hard";
-  if (id >= 241) band = "veryHard";
-  LEVELS.push({
-    id,
-    name: "Level " + id,
-    length: 1400 + (id * 5),
-    difficulty: band
-  });
-}
-
-// ---------- LEVEL SELECT (Drive Mad–style canvas) ----------
-const levelCanvas = document.getElementById("levelCanvas");
-const lctx = levelCanvas.getContext("2d");
-
-const TILE_SIZE = 90;
-const TILE_GAP = 20;
-const COLS = 5;
-
-let hoverTile = null;
-let pressedTile = null;
-
-function drawLevelSelect() {
-  lctx.fillStyle = "#111";
-  lctx.fillRect(0, 0, levelCanvas.width, levelCanvas.height);
-
-  lctx.font = "bold 32px Arial";
-  lctx.textAlign = "center";
-  lctx.textBaseline = "middle";
-
-  for (let i = 1; i <= 250; i++) {
-    const index = i - 1;
-    const col = index % COLS;
-    const row = Math.floor(index / COLS);
-
-    const x = 100 + col * (TILE_SIZE + TILE_GAP);
-    const y = 80 + row * (TILE_SIZE + TILE_GAP);
-
-    let size = TILE_SIZE;
-
-    if (pressedTile === i) size = TILE_SIZE * 0.92;
-
-    if (hoverTile === i) {
-      lctx.fillStyle = "#ffdf4d";
-    } else {
-      lctx.fillStyle = "#f7d13d";
-    }
-
-    const offset = (TILE_SIZE - size) / 2;
-
-    lctx.fillRect(x + offset, y + offset, size, size);
-
-    lctx.lineWidth = 6;
-    lctx.strokeStyle = "#000";
-    lctx.strokeRect(x + offset, y + offset, size, size);
-
-    lctx.fillStyle = "#000";
-    lctx.fillText(i, x + TILE_SIZE / 2, y + TILE_SIZE / 2);
-  }
-}
-
-drawLevelSelect();
-
-levelCanvas.addEventListener("mousemove", e => {
-  const rect = levelCanvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
-
-  hoverTile = null;
-
-  for (let i = 1; i <= 250; i++) {
-    const index = i - 1;
-    const col = index % COLS;
-    const row = Math.floor(index / COLS);
-
-    const x = 100 + col * (TILE_SIZE + TILE_GAP);
-    const y = 80 + row * (TILE_SIZE + TILE_GAP);
-
-    if (mx >= x && mx <= x + TILE_SIZE && my >= y && my <= y + TILE_SIZE) {
-      hoverTile = i;
-      break;
-    }
-  }
-
-  drawLevelSelect();
-});
-
-levelCanvas.addEventListener("mousedown", () => {
-  if (hoverTile !== null) {
-    pressedTile = hoverTile;
-    drawLevelSelect();
-  }
-});
-
-levelCanvas.addEventListener("mouseup", () => {
-  if (pressedTile !== null) {
-    const level = pressedTile;
-    pressedTile = null;
-    drawLevelSelect();
-    loadLevel(level);
-  }
-});
-
-// ---------- SIMPLE GAME VIEW ----------
-const gameCanvas = document.getElementById("gameCanvas");
-const gctx = gameCanvas.getContext("2d");
-
-let currentLevel = null;
-
-function loadLevel(id) {
-  const level = LEVELS.find(l => l.id === id);
-  currentLevel = level;
-  document.getElementById("game-info").textContent =
-    `Loaded Level ${id} – ${level.name} – difficulty: ${level.difficulty}, length: ${level.length}`;
-
-  drawGame();
-}
-
-function drawGame() {
-  gctx.fillStyle = "#222";
-  gctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
-
-  if (!currentLevel) return;
-
-  // ground
-  gctx.fillStyle = "#333";
-  gctx.fillRect(0, 150, gameCanvas.width, 50);
-
-  // car (just a rectangle for now)
-  gctx.fillStyle = "#e33";
-  gctx.fillRect(50, 120, 60, 30);
-
-  // goal flag at end of level (scaled into canvas)
-  const maxLen = 2500;
-  const t = Math.min(currentLevel.length / maxLen, 1);
-  const goalX = 100 + t * (gameCanvas.width - 150);
-
-  gctx.fillStyle = "#fff";
-  gctx.fillRect(goalX, 80, 6, 70);
-  gctx.fillStyle = "#ff0";
-  gctx.fillRect(goalX + 6, 80, 30, 20);
-}
-</script>
-
-</body>
-</html>
+<!-- Matter.js CDN -->
