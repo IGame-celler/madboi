@@ -2,9 +2,6 @@
 <html lang="en-us">
 
 <head>
-  
-  
-  
   <base href="https://cdn.jsdelivr.net/gh/genizy/dmad-poki@49b5ab6b987f5f3be58f9dae59c92e8fc1aab9b0/">
   <script>
   window.assgdd = {
@@ -80,63 +77,39 @@
 
   <!-- Auto generated JS -->
   <script type="text/javascript" src="webapp/index.js"></script>
+
+  <!-- ---------------------------
+       Patch: Add levels 201–250
+       --------------------------- -->
+  <script>
+    const CUSTOM_LEVELS = [];
+    for (let i = 201; i <= 250; i++) {
+      CUSTOM_LEVELS.push({
+        id: i,
+        objects: [
+          { type: "start", x: 0, y: 0 },
+          { type: "ramp", x: 6, y: 0, angle: 20 + (i % 20) },
+          { type: "gap", x: 12, width: 4 + (i % 8) },
+          { type: "platform", x: 18, y: 2, length: 6 },
+          { type: "goal", x: 30, y: 0 }
+        ]
+      });
+    }
+
+    setTimeout(() => {
+      if (window.getLevel) {
+        const originalGetLevel = window.getLevel;
+        window.getLevel = function (levelId) {
+          if (levelId <= 200) return originalGetLevel(levelId);
+          return CUSTOM_LEVELS.find(l => l.id === levelId);
+        };
+      }
+
+      if (window.TOTAL_LEVELS) {
+        window.TOTAL_LEVELS = 250;
+      }
+    }, 3000);
+  </script>
+
 </body>
-
 </html>
-<script>
-
-/* ---------------------------
-Add levels 201–250
---------------------------- */
-
-const CUSTOM_LEVELS = [];
-
-for(let i=201;i<=250;i++){
-
-CUSTOM_LEVELS.push({
-
-id:i,
-
-objects:[
-{type:"start",x:0,y:0},
-{type:"ramp",x:6,y:0,angle:20+(i%20)},
-{type:"gap",x:12,width:4+(i%8)},
-{type:"platform",x:18,y:2,length:6},
-{type:"goal",x:30,y:0}
-]
-
-});
-
-}
-
-/* ---------------------------
-Patch game after load
---------------------------- */
-
-setTimeout(()=>{
-
-if(window.getLevel){
-
-const originalGetLevel = window.getLevel;
-
-window.getLevel = function(levelId){
-
-if(levelId <= 200){
-return originalGetLevel(levelId);
-}
-
-return CUSTOM_LEVELS.find(l => l.id === levelId);
-
-};
-
-}
-
-/* increase level count */
-
-if(window.TOTAL_LEVELS){
-window.TOTAL_LEVELS = 250;
-}
-
-},3000);
-
-</script>
