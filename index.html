@@ -55,16 +55,15 @@
 <h1>Drive Mad – 250 Level Edition</h1>
 <p>Select a level below</p>
 
+<!-- IMPORTANT: This must exist before the script runs -->
 <div id="level-select"></div>
 
 <div id="game-area">No level loaded yet.</div>
 
 <script>
 // ------------------------------------------------------------
-// BASE LEVEL ARRAY (1–200)
+// BASE LEVEL ARRAY (1–200 placeholder)
 // ------------------------------------------------------------
-// Insert your real 1–200 level data here.
-// For now, we use placeholders so the file runs.
 const LEVELS = [];
 for (let i = 1; i <= 200; i++) {
   LEVELS.push({
@@ -104,3 +103,83 @@ function createLevel(id, difficultyBand) {
 
       if (difficultyBand === "medium") {
         objs.push(
+          { type: "seesaw", x: 600, y: 0, length: 200 },
+          { type: "bump", x: 950, y: 0, width: 80 }
+        );
+      }
+
+      if (difficultyBand === "hard") {
+        objs.push(
+          { type: "seesaw", x: 650, y: 0, length: 220 },
+          { type: "elevator", x: 1000, y: -80, width: 120, travel: 120, speed: 1.2 },
+          { type: "breakable", x: 1350, y: 0, width: 120 }
+        );
+      }
+
+      if (difficultyBand === "veryHard") {
+        objs.push(
+          { type: "seesaw", x: 650, y: 0, length: 220 },
+          { type: "elevator", x: 1000, y: -120, width: 120, travel: 180, speed: 1.5 },
+          { type: "falling-platform", x: 1350, y: 0, width: 140, delay: 0.7 },
+          { type: "bump", x: 1550, y: 0, width: 90 }
+        );
+      }
+
+      return objs;
+    })()
+  };
+}
+
+// Generate levels 201–250
+(function generateExtraLevels() {
+  for (let id = 201; id <= 250; id++) {
+    let band = "medium";
+    if (id >= 221 && id <= 240) band = "hard";
+    if (id >= 241) band = "veryHard";
+    LEVELS.push(createLevel(id, band));
+  }
+})();
+
+// ------------------------------------------------------------
+// LEVEL SELECT BUTTONS (1–250)
+// ------------------------------------------------------------
+function createLevelSelect() {
+  const container = document.getElementById("level-select");
+
+  if (!container) {
+    console.error("ERROR: #level-select not found in DOM");
+    return;
+  }
+
+  container.innerHTML = "";
+
+  for (let i = 1; i <= 250; i++) {
+    const btn = document.createElement("button");
+    btn.className = "level-button";
+    btn.textContent = i;
+    btn.onclick = () => loadLevel(i);
+    container.appendChild(btn);
+  }
+}
+
+// Ensure DOM is ready BEFORE generating buttons
+window.addEventListener("DOMContentLoaded", createLevelSelect);
+
+// ------------------------------------------------------------
+// LEVEL LOADER
+// ------------------------------------------------------------
+function loadLevel(id) {
+  const level = LEVELS.find(l => l.id === id);
+  if (!level) {
+    document.getElementById("game-area").textContent =
+      "Level not found: " + id;
+    return;
+  }
+
+  document.getElementById("game-area").textContent =
+    `Loaded Level ${id}`;
+}
+</script>
+
+</body>
+</html>
