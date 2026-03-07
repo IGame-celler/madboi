@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>Drive Mad 250-Level</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Drive Mad 250 Levels</title>
 <style>
 body{margin:0;overflow:hidden;font-family:Arial,sans-serif;background:#111;color:white;}
-#levelBar{position:fixed;top:0;left:0;width:100%;background:#222;padding:5px;display:flex;flex-wrap:wrap;z-index:100;}
+#levelBar{position:fixed;top:0;left:0;width:100%;background:#222;padding:5px;display:flex;flex-wrap:wrap;z-index:10;}
 .levelBtn{margin:2px;padding:5px 8px;border:none;background:#555;color:white;font-size:12px;cursor:pointer;}
 .levelBtn.locked{background:#333;color:#777;cursor:not-allowed;}
 canvas{display:block;margin-top:60px;background:#222;}
@@ -17,56 +17,85 @@ canvas{display:block;margin-top:60px;background:#222;}
 <div id="levelBar"></div>
 <canvas id="gameCanvas"></canvas>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
 <script>
+
 // =====================
-// Setup canvas
+// Scene Setup
 // =====================
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight-60;
+let scene = new THREE.Scene();
+scene.background = new THREE.Color(0x111111);
+let camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
+camera.position.set(0,50,150);
+
+let renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth, window.innerHeight-50);
+document.body.appendChild(renderer.domElement);
+
+// =====================
+// Lights
+// =====================
+let light = new THREE.DirectionalLight(0xffffff,1);
+light.position.set(100,200,100);
+scene.add(light);
+scene.add(new THREE.AmbientLight(0x888888));
+
+// =====================
+// Car
+// =====================
+let carGeom = new THREE.BoxGeometry(10,5,5);
+let carMat = new THREE.MeshStandardMaterial({color:0xff0000});
+let car = new THREE.Mesh(carGeom,carMat);
+car.position.set(0,5,0);
+scene.add(car);
+
+// =====================
+// Ground
+// =====================
+let groundGeom = new THREE.BoxGeometry(1000,2,50);
+let groundMat = new THREE.MeshStandardMaterial({color:0x444444});
+let ground = new THREE.Mesh(groundGeom,groundMat);
+ground.position.set(500,0,0);
+scene.add(ground);
 
 // =====================
 // Game variables
 // =====================
-let car = {x:100,y:300,vx:0,vy:0,width:40,height:20,angle:0};
-let keys = {};
 let currentLevel = 1;
-let maxUnlocked = parseInt(localStorage.getItem("driveMadMax")) || 1;
+let maxUnlocked = parseInt(localStorage.getItem("driveMad3DMax")) || 1;
+let keys = {};
 
 // =====================
-// Level definitions
+// Levels
 // =====================
 let levels = [];
 
-// Levels 1–200: standard ramps
+// --- Original 200 levels ---
+// You can replace this with the original level array if available
 for(let i=1;i<=200;i++){
     levels.push({
-        groundY:350 - i*0.2,
-        ramps:[{x:300+i*2,width:200,height:50+i*0.1}],
-        goal:800+i*5
+        ramps:[{x:300+i*2,y:2,width:50,height:10}],
+        goalX:800+i*5
     });
 }
 
-// Levels 201–250: progressively harder
+// --- New 50 levels (201-250) ---
 for(let i=201;i<=250;i++){
     levels.push({
-        groundY:320 - (i-200)*2,
         ramps:[
-            {x:250+(i-200)*10,width:120,height:80+(i-200)*3},
-            {x:450+(i-200)*12,width:120,height:120+(i-200)*3},
-            {x:650+(i-200)*15,width:120,height:160+(i-200)*3}
+            {x:250+(i-200)*10,y:2,width:60,height:15+(i-200)},
+            {x:450+(i-200)*12,y:2,width:70,height:20+(i-200)}
         ],
-        goal:900 + (i-200)*30
+        goalX:900+(i-200)*30
     });
 }
 
 // =====================
-// Level buttons
+// Top buttons (201-250)
 // =====================
 const levelBar = document.getElementById("levelBar");
 for(let i=201;i<=250;i++){
-    const btn = document.createElement("button");
+    let btn = document.createElement("button");
     btn.innerText = i;
     btn.className = "levelBtn";
     if(i>maxUnlocked) btn.classList.add("locked");
@@ -79,61 +108,73 @@ for(let i=201;i<=250;i++){
 }
 
 function updateButtons(){
-    document.querySelectorAll(".levelBtn").forEach(btn=>{
-        let lvl=parseInt(btn.innerText);
-        if(lvl<=maxUnlocked) btn.classList.remove("locked");
+    document.querySelectorAll(".levelBtn").forEach(b=>{
+        let lvl=parseInt(b.innerText);
+        if(lvl<=maxUnlocked) b.classList.remove("locked");
     });
 }
 
 // =====================
-// Input
+// Controls
 // =====================
 document.addEventListener("keydown",e=>keys[e.key]=true);
 document.addEventListener("keyup",e=>keys[e.key]=false);
 
 // =====================
-// Game functions
+// Physics
 // =====================
+let gravity=-0.5;
+
 function resetCar(){
-    car.x=100;
-    car.y=200;
-    car.vx=0;
-    car.vy=0;
-    car.angle=0;
+    car.position.set(0,5,0);
+    car.velocity = new THREE.Vector3(0,0,0);
 }
 
-const gravity = 0.5;
+resetCar();
 
-function update(){
-    if(keys["ArrowRight"] || keys["d"]) car.vx+=0.5;
-    if(keys["ArrowLeft"] || keys["a"]) car.vx-=0.5;
+// =====================
+// Game Loop
+// =====================
+let rampMeshes=[];
+function drawLevel(){
+    rampMeshes.forEach(m=>scene.remove(m));
+    rampMeshes=[];
 
-    car.vy+=gravity;
-    car.x+=car.vx;
-    car.y+=car.vy;
-    car.vx*=0.98;
-    
     let lvl = levels[currentLevel-1];
-
-    // Ground collision
-    if(car.y>lvl.groundY){
-        car.y=lvl.groundY;
-        car.vy=0;
-    }
-
-    // Ramps
     lvl.ramps.forEach(r=>{
-        if(car.x>r.x && car.x<r.x+r.width && car.y>lvl.groundY-r.height){
-            car.y=lvl.groundY-r.height;
-            car.vy=0;
-        }
+        let g = new THREE.BoxGeometry(r.width,r.height,50);
+        let m = new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:0x888888}));
+        m.position.set(r.x,r.height/2,0);
+        scene.add(m);
+        rampMeshes.push(m);
     });
 
     // Goal
-    if(car.x>lvl.goal){
+    let goalGeom = new THREE.BoxGeometry(10,20,50);
+    let goalMat = new THREE.MeshStandardMaterial({color:0x00ff00});
+    let goalMesh = new THREE.Mesh(goalGeom,goalMat);
+    goalMesh.position.set(lvl.goalX,10,0);
+    scene.add(goalMesh);
+    rampMeshes.push(goalMesh);
+}
+
+function update(){
+    if(!car.velocity) car.velocity=new THREE.Vector3(0,0,0);
+    if(keys["ArrowRight"]||keys["d"]) car.velocity.x+=0.5;
+    if(keys["ArrowLeft"]||keys["a"]) car.velocity.x-=0.5;
+    car.velocity.y+=gravity;
+
+    car.position.add(car.velocity);
+
+    // Ground collision
+    if(car.position.y<5){ car.position.y=5; car.velocity.y=0; }
+
+    // Goal check
+    let lvl = levels[currentLevel-1];
+    if(car.position.x>lvl.goalX){
         if(currentLevel>=maxUnlocked){
             maxUnlocked=currentLevel+1;
-            localStorage.setItem("driveMadMax",maxUnlocked);
+            localStorage.setItem("driveMad3DMax",maxUnlocked);
             updateButtons();
         }
         currentLevel++;
@@ -142,45 +183,20 @@ function update(){
     }
 }
 
-function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    let lvl = levels[currentLevel-1];
-
-    // Ground
-    ctx.fillStyle="#666";
-    ctx.fillRect(0,lvl.groundY+20,canvas.width,100);
-
-    // Ramps
-    ctx.fillStyle="#888";
-    lvl.ramps.forEach(r=>{
-        ctx.fillRect(r.x,lvl.groundY-r.height,r.width,r.height);
-    });
-
-    // Goal
-    ctx.fillStyle="lime";
-    ctx.fillRect(lvl.goal,lvl.groundY-60,20,60);
-
-    // Car
-    ctx.save();
-    ctx.translate(car.x,car.y-10);
-    ctx.rotate(car.angle);
-    ctx.fillStyle="red";
-    ctx.fillRect(-car.width/2,-car.height/2,car.width,car.height);
-    ctx.restore();
-}
-
 // =====================
-// Main loop
+// Animate
 // =====================
-function loop(){
+function animate(){
+    requestAnimationFrame(animate);
     update();
-    draw();
-    requestAnimationFrame(loop);
+    drawLevel();
+    camera.position.x=car.position.x+150;
+    camera.lookAt(car.position.x,car.position.y,0);
+    renderer.render(scene,camera);
 }
 
-resetCar();
-loop();
-</script>
+animate();
 
+</script>
 </body>
 </html>
