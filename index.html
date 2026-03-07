@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Drive Mad 250 Levels</title>
+<title>Drive Mad 3D - 250 Levels</title>
 <style>
 body{margin:0;overflow:hidden;background:#111;font-family:Arial,sans-serif;}
 #levelBar{
@@ -39,9 +39,7 @@ document.body.appendChild(renderer.domElement);
 // =====================
 // Physics World
 // =====================
-const world = new CANNON.World({
-  gravity: new CANNON.Vec3(0,-9.82,0)
-});
+const world = new CANNON.World({ gravity: new CANNON.Vec3(0,-9.82,0) });
 
 // =====================
 // Lights
@@ -86,16 +84,11 @@ world.addBody(groundBody);
 // Levels
 // =====================
 let levels = [];
-
-// --- Original 200 levels (placeholders, you can replace with actual original data)
+// --- Original 200 levels placeholders ---
 for(let i=1;i<=200;i++){
-  levels.push({
-    ramps:[{x:300+i*2,y:2,width:50,height:10}],
-    goalX:800+i*5
-  });
+  levels.push({ ramps:[{x:300+i*2,y:2,width:50,height:10}], goalX:800+i*5 });
 }
-
-// --- New 50 levels 201-250 (3D ramps, heights, progressive difficulty)
+// --- New 50 levels 201-250 ---
 for(let i=201;i<=250;i++){
   levels.push({
     ramps:[
@@ -108,7 +101,7 @@ for(let i=201;i<=250;i++){
 }
 
 // =====================
-// UI Buttons 201-250
+// Level Buttons 201-250
 // =====================
 let currentLevel = 1;
 let maxUnlocked = parseInt(localStorage.getItem("driveMad3DMax"))||200;
@@ -122,6 +115,7 @@ for(let i=201;i<=250;i++){
   btn.onclick=()=>{
     if(i>maxUnlocked) return;
     currentLevel=i;
+    setupLevel(currentLevel-1);
     resetCar();
   }
   levelBar.appendChild(btn);
@@ -135,13 +129,16 @@ function updateButtons(){
 }
 
 // =====================
-// Ramps & Goal Meshes
+// Ramps & Goal Setup
 // =====================
-let rampMeshes=[];
-function drawLevel(){
+let rampMeshes=[], rampBodies=[];
+function setupLevel(levelIndex){
   rampMeshes.forEach(m=>scene.remove(m));
   rampMeshes=[];
-  const lvl = levels[currentLevel-1];
+  rampBodies.forEach(b=>world.removeBody(b));
+  rampBodies=[];
+  const lvl = levels[levelIndex];
+
   lvl.ramps.forEach(r=>{
     const g = new THREE.BoxGeometry(r.width,r.height,50);
     const m = new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:0x888888}));
@@ -149,10 +146,11 @@ function drawLevel(){
     scene.add(m);
     rampMeshes.push(m);
 
-    const rampBody = new CANNON.Body({mass:0});
-    rampBody.addShape(new CANNON.Box(new CANNON.Vec3(r.width/2,r.height/2,25)));
-    rampBody.position.set(r.x+r.width/2,r.height/2,0);
-    world.addBody(rampBody);
+    const body = new CANNON.Body({mass:0});
+    body.addShape(new CANNON.Box(new CANNON.Vec3(r.width/2,r.height/2,25)));
+    body.position.set(r.x+r.width/2,r.height/2,0);
+    world.addBody(body);
+    rampBodies.push(body);
   });
 
   // Goal
@@ -172,7 +170,7 @@ document.addEventListener("keydown",e=>keys[e.key]=true);
 document.addEventListener("keyup",e=>keys[e.key]=false);
 
 // =====================
-// Reset car
+// Reset Car
 // =====================
 function resetCar(){
   carBody.position.set(0,5,0);
@@ -193,11 +191,8 @@ function animate(){
 
   world.step(1/60);
 
-  // Sync mesh
   carMesh.position.copy(carBody.position);
   carMesh.quaternion.copy(carBody.quaternion);
-
-  drawLevel();
 
   // Camera follow
   camera.position.x = carBody.position.x + 150;
@@ -214,12 +209,17 @@ function animate(){
     }
     currentLevel++;
     if(currentLevel>levels.length) currentLevel=levels.length;
+    setupLevel(currentLevel-1);
     resetCar();
   }
 
   renderer.render(scene,camera);
 }
 
+// =====================
+// Start Game
+// =====================
+setupLevel(currentLevel-1);
 resetCar();
 animate();
 
