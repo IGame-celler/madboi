@@ -1,51 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Drive Mad 250 Levels</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drive Mad Mod</title>
 
 <style>
 
 body{
 margin:0;
-background:#111;
-color:white;
-font-family:Arial;
 overflow:hidden;
 }
 
-#topbar{
+#game-container{
+width:100vw;
+height:100vh;
+}
+
+#levelBar{
 position:fixed;
 top:0;
 left:0;
 width:100%;
-background:#222;
-padding:5px;
+background:#111;
+padding:4px;
 display:flex;
 flex-wrap:wrap;
-z-index:10;
+z-index:999;
 }
 
 .levelBtn{
 margin:2px;
-padding:5px 8px;
+padding:4px 7px;
 border:none;
-background:#555;
+background:#444;
 color:white;
-cursor:pointer;
 font-size:12px;
+cursor:pointer;
 }
 
 .levelBtn.locked{
-background:#333;
+background:#222;
 color:#777;
 cursor:not-allowed;
-}
-
-canvas{
-display:block;
-margin-top:60px;
-background:#222;
 }
 
 </style>
@@ -53,214 +50,91 @@ background:#222;
 
 <body>
 
-<div id="topbar"></div>
-<canvas id="game"></canvas>
+<div id="levelBar"></div>
+<div id="game-container"></div>
+
+<script src="source_min.js"></script>
 
 <script>
 
-const canvas = document.getElementById("game")
-const ctx = canvas.getContext("2d")
-
-canvas.width = window.innerWidth
-canvas.height = window.innerHeight - 60
-
-let car = {x:100,y:300,vx:0,vy:0}
-
-let currentLevel = 1
-let maxUnlocked = localStorage.getItem("maxLevel") || 1
+// progress
+let maxUnlocked = localStorage.getItem("driveMadLevel") || 1
 maxUnlocked = parseInt(maxUnlocked)
 
-const gravity = 0.5
+const bar = document.getElementById("levelBar")
 
-let keys = {}
-
-document.addEventListener("keydown",e=>keys[e.key]=true)
-document.addEventListener("keyup",e=>keys[e.key]=false)
-
-let levels = []
-
-// generate 250 levels
+// create 250 level buttons
 for(let i=1;i<=250;i++){
 
-let difficulty = i/250
-
-levels.push({
-
-groundY:350 - difficulty*100,
-
-ramps:[
-{
-x:300,
-width:200,
-height:50 + difficulty*100
-}
-],
-
-goal:800 + difficulty*400
-
-})
-
-}
-
-// harder custom levels for 201-250
-for(let i=201;i<=250;i++){
-
-levels[i-1] = {
-
-groundY:320 - (i-200)*2,
-
-ramps:[
-{x:250,width:120,height:80},
-{x:450,width:120,height:120},
-{x:650,width:120,height:160}
-],
-
-goal:900 + (i-200)*30
-
-}
-
-}
-
-// level buttons
-const topbar = document.getElementById("topbar")
-
-for(let i=1;i<=250;i++){
-
-let btn = document.createElement("button")
-btn.innerText=i
+let btn=document.createElement("button")
+btn.textContent=i
 btn.className="levelBtn"
 
 if(i>maxUnlocked) btn.classList.add("locked")
 
 btn.onclick=()=>{
-if(i<=maxUnlocked){
-currentLevel=i
-resetCar()
-}
-}
 
-topbar.appendChild(btn)
+if(i>maxUnlocked) return
+
+loadLevel(i)
 
 }
 
-function updateButtons(){
+bar.appendChild(btn)
 
-document.querySelectorAll(".levelBtn").forEach(b=>{
+}
 
-let lvl=parseInt(b.innerText)
+// load level patch
+function loadLevel(level){
 
-if(lvl<=maxUnlocked) b.classList.remove("locked")
+console.log("Loading level",level)
 
+/*
+Hook into original game
+*/
+
+if(window.game){
+
+game.loadLevel?.(level)
+
+}
+
+}
+
+// level complete hook
+function beatLevel(level){
+
+if(level>=maxUnlocked){
+
+maxUnlocked=level+1
+
+localStorage.setItem("driveMadLevel",maxUnlocked)
+
+document.querySelectorAll(".levelBtn").forEach(btn=>{
+if(parseInt(btn.textContent)<=maxUnlocked)
+btn.classList.remove("locked")
 })
 
 }
 
-// reset car
-function resetCar(){
-
-car.x=100
-car.y=200
-car.vx=0
-car.vy=0
-
 }
 
-// physics
-function update(){
+// start game
+const game = new DriveMadGame({
 
-if(keys["ArrowRight"]) car.vx+=0.5
-if(keys["ArrowLeft"]) car.vx-=0.5
+container: document.getElementById("game-container"),
+wasmPath: "source.wasm",
+jsPath: "source.js",
 
-car.vy+=gravity
+onLoad: ()=>{
 
-car.x+=car.vx
-car.y+=car.vy
+console.log("Drive Mad loaded")
 
-car.vx*=0.98
+window.game=game
 
-let level=levels[currentLevel-1]
-
-// ground
-if(car.y>level.groundY){
-car.y=level.groundY
-car.vy=0
-}
-
-// ramps
-level.ramps.forEach(r=>{
-
-if(
-car.x>r.x &&
-car.x<r.x+r.width &&
-car.y>level.groundY-r.height
-){
-car.y=level.groundY-r.height
-car.vy=0
 }
 
 })
-
-// goal
-if(car.x>level.goal){
-
-if(currentLevel>=maxUnlocked){
-
-maxUnlocked=currentLevel+1
-localStorage.setItem("maxLevel",maxUnlocked)
-
-updateButtons()
-
-}
-
-currentLevel++
-resetCar()
-
-}
-
-}
-
-// draw
-function draw(){
-
-ctx.clearRect(0,0,canvas.width,canvas.height)
-
-let level=levels[currentLevel-1]
-
-// ground
-ctx.fillStyle="#666"
-ctx.fillRect(0,level.groundY+20,canvas.width,100)
-
-// ramps
-ctx.fillStyle="#888"
-
-level.ramps.forEach(r=>{
-
-ctx.fillRect(r.x,level.groundY-r.height,r.width,r.height)
-
-})
-
-// goal
-ctx.fillStyle="lime"
-ctx.fillRect(level.goal,level.groundY-60,20,60)
-
-// car
-ctx.fillStyle="red"
-ctx.fillRect(car.x,car.y-20,40,20)
-
-}
-
-// game loop
-function loop(){
-
-update()
-draw()
-
-requestAnimationFrame(loop)
-
-}
-
-resetCar()
-loop()
 
 </script>
 
