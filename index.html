@@ -39,9 +39,6 @@
         <progress id="progress" class="loading" value="0" max="100"></progress>
       </div>
       <p class="description"></p>
-
-      <!-- Button to access new 50 levels -->
-      <button onclick="showNewLevelSelect()" style="margin-top:20px;">Play New 50 Levels</button>
     </div>
     <canvas class="emscripten" id="canvas" tabindex=-1></canvas>
     <div id="gradient"></div>
@@ -54,98 +51,93 @@
   <!-- Auto generated JS -->
   <script type="text/javascript" src="webapp/index.js"></script>
 
-  <!-- ===== New 50 Levels Menu Overlay ===== -->
-  <div id="new_level_select" style="
-      display:none;
-      position:absolute;
+  <!-- ===== Floating 50 Level Buttons Toolbar ===== -->
+  <div id="floating_level_toolbar" style="
+      position:fixed;
       top:0;
       left:0;
       width:100%;
-      height:100%;
-      background-color: rgba(0,0,0,0.9);
+      background-color: rgba(0,0,0,0.85);
       color:white;
-      z-index:9999;
-      text-align:center;
-      overflow-y:auto;
-      padding-top:50px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:5px;
+      padding:5px;
+      z-index:10000;
+      max-height: 90px;
+      overflow-x: auto;
+      overflow-y: hidden;
   ">
-    <h2>New 50 Levels</h2>
-    <div id="new_level_buttons" style="
-        display:grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap:10px;
-        max-width:600px;
-        margin:0 auto;
-    ">
-      <!-- Buttons generated dynamically -->
-    </div>
-    <button style="margin-top:20px; padding:10px 20px;" onclick="backToMainMenu()">Back</button>
+    <!-- Buttons generated dynamically -->
   </div>
 
-  <!-- ===== New Level Buttons Script ===== -->
   <script>
-    // Only create new buttons after game scripts are ready
+    // ----- Progress Saving System -----
+    function getPlayerProgress() {
+      const saved = localStorage.getItem("drive_mad_progress");
+      if (saved) return parseInt(saved, 10);
+      localStorage.setItem("drive_mad_progress", "1");
+      return 1;
+    }
+
+    function saveProgress(levelNumber) {
+      let saved = parseInt(localStorage.getItem("drive_mad_progress") || "1", 10);
+      if (levelNumber + 1 > saved) {
+        localStorage.setItem("drive_mad_progress", (levelNumber + 1).toString());
+      }
+    }
+
+    // ----- Floating 50 Test Level Buttons -----
     document.addEventListener("DOMContentLoaded", () => {
-      // Ensure the levels array exists
       if (typeof levels === "undefined") {
         console.error("levels array not found. Original levels may not be loaded yet.");
         return;
       }
 
-      // Map 50 new buttons to existing levels for testing
-      const NEW_LEVELS = [];
+      const toolbar = document.getElementById("floating_level_toolbar");
+
+      // Create 50 test buttons (200–249)
       for (let i = 0; i < 50; i++) {
-        NEW_LEVELS.push({
-          id: 200 + i,
-          name: "Level " + (200 + i),
-          layoutIndex: i % levels.length // map to existing levels
-        });
+        const btn = document.createElement("button");
+        const levelId = 200 + i;
+        btn.innerText = levelId;
+        btn.style.padding = "4px 8px";
+        btn.style.fontSize = "12px";
+        btn.style.cursor = "pointer";
+
+        // Map to existing levels for testing
+        const layoutIndex = i % levels.length;
+
+        btn.onclick = () => {
+          if (typeof levels !== "undefined" && levels[layoutIndex]) {
+            loadLevel(levels[layoutIndex]);
+          } else {
+            console.error("Level data not found for Level ID:", levelId);
+          }
+        };
+
+        toolbar.appendChild(btn);
       }
 
-      // Show new level select overlay
-      function showNewLevelSelect() {
-        const container = document.getElementById('new_level_buttons');
-        container.innerHTML = '';
-        NEW_LEVELS.forEach(level => {
-          const btn = document.createElement('button');
-          btn.innerText = level.name;
-          btn.style.padding = "10px";
-          btn.style.fontSize = "14px";
-          btn.style.cursor = "pointer";
-          btn.onclick = () => loadNewLevel(level.id);
-          container.appendChild(btn);
-        });
-
-        document.getElementById('play_content').style.display = 'none';
-        document.getElementById('new_level_select').style.display = 'block';
+      // ----- Load Player Progress on Start -----
+      const startLevelIndex = getPlayerProgress() - 1; // 0-indexed
+      if (levels[startLevelIndex]) {
+        loadLevel(levels[startLevelIndex]);
+      } else {
+        console.error("Starting level not found.");
       }
-
-      // Back to main menu
-      function backToMainMenu() {
-        document.getElementById('new_level_select').style.display = 'none';
-        document.getElementById('play_content').style.display = 'block';
-      }
-
-      // Load new level
-      function loadNewLevel(levelId) {
-        const level = NEW_LEVELS.find(l => l.id === levelId);
-        if (!level) return;
-
-        document.getElementById('new_level_select').style.display = 'none';
-
-        // Load real level from levels array
-        if (typeof levels !== "undefined" && levels[level.layoutIndex]) {
-          loadLevel(levels[level.layoutIndex]);
-        } else {
-          console.error("Level data not found for Level ID:", level.id);
-        }
-      }
-
-      // Expose functions globally so buttons can access them
-      window.showNewLevelSelect = showNewLevelSelect;
-      window.backToMainMenu = backToMainMenu;
-      window.loadNewLevel = loadNewLevel;
     });
+
+    // Example: hook this into your Fancade level-complete callback
+    // Replace `onLevelComplete(levelNumber)` with your game's actual level-complete event
+    function onLevelComplete(levelNumber) {
+      saveProgress(levelNumber);
+    }
+
+    // Expose progress functions globally if needed
+    window.getPlayerProgress = getPlayerProgress;
+    window.saveProgress = saveProgress;
+    window.onLevelComplete = onLevelComplete;
   </script>
 
 </body>
