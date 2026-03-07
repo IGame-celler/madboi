@@ -83,13 +83,13 @@
   </div>
 
   <script>
-    // Define the new 50 levels (IDs 200-249 for testing starting at 200)
+    // Define the new 50 levels (IDs 200-249)
     const NEW_LEVELS = [];
     for (let i = 200; i < 250; i++) {
       NEW_LEVELS.push({
         id: i,
         name: "Level " + i,
-        layout: "layout_data_" + i // Replace with your actual level layout
+        layout: "layout_data_" + i // REPLACE with your actual level layout data
       });
     }
 
@@ -125,16 +125,22 @@
       const level = NEW_LEVELS.find(l => l.id === levelId);
       if (!level) return;
 
-      console.log("Loading new level:", level.id, level.layout);
-
-      // Replace this with your existing level-loading function
-      // Example: loadLevel(level.layout);
-      // For testing, we start at level 200
-      alert("Starting test level " + level.id);
-
-      // Hide level select after starting
+      // Hide the new level select overlay
       document.getElementById('new_level_select').style.display = 'none';
+
+      // --- REAL LEVEL LOADING ---
+      // Replace this with your actual Fancade/WASM level-loading function
+      // Example: loadLevel(level.layout);
+      if (typeof loadLevel === "function") {
+        loadLevel(level.layout); // Your game function
+      } else {
+        console.log("Game loadLevel() function not found. Level ID:", level.id);
+      }
     }
+
+    // OPTIONAL: start first new level automatically for testing
+    // Uncomment the next line to auto-start level 200 when opening the menu
+    // loadNewLevel(200);
   </script>
 
 </body>
