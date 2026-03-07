@@ -3,19 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Drive Mad 3D Clone - GitHub Friendly</title>
+<title>Drive Mad 250 Levels</title>
 <style>
 body{margin:0;overflow:hidden;background:#111;font-family:Arial,sans-serif;}
 #levelBar{
-  position:fixed;top:0;left:0;width:100%;background:#222;padding:5px;display:flex;flex-wrap:wrap;z-index:10;
+  position:fixed; top:0; left:0; width:100%; background:#222; padding:5px; display:flex; flex-wrap:wrap; z-index:100;
 }
 .levelBtn{
-  margin:2px;padding:5px 8px;border:none;background:#555;color:white;font-size:12px;cursor:pointer;
+  margin:2px; padding:5px 8px; font-size:12px; border:none; background:#555; color:white; cursor:pointer;
 }
 .levelBtn.locked{
-  background:#333;color:#777;cursor:not-allowed;
+  background:#333; color:#777; cursor:not-allowed;
 }
-canvas{display:block;margin-top:60px;}
 </style>
 </head>
 <body>
@@ -31,7 +30,7 @@ canvas{display:block;margin-top:60px;}
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x111111);
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
-camera.position.set(0, 50, 150);
+camera.position.set(0,50,150);
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight-50);
@@ -88,7 +87,7 @@ world.addBody(groundBody);
 // =====================
 let levels = [];
 
-// Original 200 levels
+// --- Original 200 levels (placeholders, you can replace with actual original data)
 for(let i=1;i<=200;i++){
   levels.push({
     ramps:[{x:300+i*2,y:2,width:50,height:10}],
@@ -96,12 +95,13 @@ for(let i=1;i<=200;i++){
   });
 }
 
-// New 50 levels 201-250
+// --- New 50 levels 201-250 (3D ramps, heights, progressive difficulty)
 for(let i=201;i<=250;i++){
   levels.push({
     ramps:[
       {x:250+(i-200)*10,y:2,width:60,height:15+(i-200)},
-      {x:450+(i-200)*12,y:2,width:70,height:20+(i-200)}
+      {x:450+(i-200)*12,y:2,width:70,height:20+(i-200)},
+      {x:650+(i-200)*15,y:2,width:80,height:25+(i-200)}
     ],
     goalX:900+(i-200)*30
   });
@@ -111,8 +111,9 @@ for(let i=201;i<=250;i++){
 // UI Buttons 201-250
 // =====================
 let currentLevel = 1;
-let maxUnlocked = parseInt(localStorage.getItem("driveMad3DMax"))||1;
+let maxUnlocked = parseInt(localStorage.getItem("driveMad3DMax"))||200;
 const levelBar = document.getElementById("levelBar");
+
 for(let i=201;i<=250;i++){
   const btn = document.createElement("button");
   btn.innerText=i;
@@ -134,7 +135,7 @@ function updateButtons(){
 }
 
 // =====================
-// Ramps & Goals
+// Ramps & Goal Meshes
 // =====================
 let rampMeshes=[];
 function drawLevel(){
@@ -170,6 +171,9 @@ let keys={};
 document.addEventListener("keydown",e=>keys[e.key]=true);
 document.addEventListener("keyup",e=>keys[e.key]=false);
 
+// =====================
+// Reset car
+// =====================
 function resetCar(){
   carBody.position.set(0,5,0);
   carBody.velocity.set(0,0,0);
@@ -178,18 +182,18 @@ function resetCar(){
 }
 
 // =====================
-// Game loop
+// Game Loop
 // =====================
 function animate(){
   requestAnimationFrame(animate);
 
-  // Apply controls
+  // Controls
   if(keys["ArrowRight"]||keys["d"]) carBody.applyForce(new CANNON.Vec3(200,0,0), carBody.position);
   if(keys["ArrowLeft"]||keys["a"]) carBody.applyForce(new CANNON.Vec3(-200,0,0), carBody.position);
 
   world.step(1/60);
 
-  // Sync mesh with physics
+  // Sync mesh
   carMesh.position.copy(carBody.position);
   carMesh.quaternion.copy(carBody.quaternion);
 
