@@ -1,85 +1,268 @@
 <!DOCTYPE html>
-<html lang="en-us">
-
+<html>
 <head>
-  
-  
-  
-  <base href="https://cdn.jsdelivr.net/gh/genizy/dmad-poki@49b5ab6b987f5f3be58f9dae59c92e8fc1aab9b0/">
-  <script>
-  window.assgdd = {
-    "ancestorOrigins": {
-        "0": "https://games.poki.com",
-        "1": "https://poki.com"
-    },
-    "href": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com/cc1bc57a-e355-4696-97c2-097bf6188606/index.html?country=US&url_referrer=https%3A%2F%2Fpoki.com%2F&site_id=3&iso_lang=en&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdrive-mad&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=78%2C93%2C96%2C103%2C377%2C390%2C400%2C893%2C929%2C1126%2C1139%2C1140%2C1141%2C1143%2C1147%2C1163%2C1185%2C1190%2C1193%2C1197&special_condition=landing&game_id=f9564e4e-ef25-4e4b-ba67-cb11a1576bbd&game_version_id=cc1bc57a-e355-4696-97c2-097bf6188606&inspector=0",
-    "origin": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
-    "protocol": "https:",
-    "host": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
-    "hostname": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
-    "port": "",
-    "pathname": "/cc1bc57a-e355-4696-97c2-097bf6188606/index.html",
-    "search": "?country=US&url_referrer=https%3A%2F%2Fpoki.com%2F&site_id=3&iso_lang=en&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdrive-mad&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=78%2C93%2C96%2C103%2C377%2C390%2C400%2C893%2C929%2C1126%2C1139%2C1140%2C1141%2C1143%2C1147%2C1163%2C1185%2C1190%2C1193%2C1197&special_condition=landing&game_id=f9564e4e-ef25-4e4b-ba67-cb11a1576bbd&game_version_id=cc1bc57a-e355-4696-97c2-097bf6188606&inspector=0",
-    "hash": ""
+<meta charset="UTF-8">
+<title>Drive Mad 250 Levels</title>
+
+<style>
+
+body{
+margin:0;
+background:#111;
+color:white;
+font-family:Arial;
+overflow:hidden;
 }
-  </script>
-  <meta charset="utf-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-  <title>Drive Mad</title>
-  <meta name="description" content="">
-  <meta name="google" content="notranslate">
+#topbar{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+background:#222;
+padding:5px;
+display:flex;
+flex-wrap:wrap;
+z-index:10;
+}
 
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <link rel="stylesheet" href="webapp/fancade.css">
-  <link rel="icon" href="webapp/favicon.ico">
+.levelBtn{
+margin:2px;
+padding:5px 8px;
+border:none;
+background:#555;
+color:white;
+cursor:pointer;
+font-size:12px;
+}
 
-  <!-- POKI SDK -->
-  <script src="poki-sdk.js" ></script>
+.levelBtn.locked{
+background:#333;
+color:#777;
+cursor:not-allowed;
+}
+
+canvas{
+display:block;
+margin-top:60px;
+background:#222;
+}
+
+</style>
 </head>
 
-<body id="body">
+<body>
 
-  <!-- Modal dialog div -->
-  <div id="modal_parent">
-    <div id="modal_content">
-      <span id="modal_close_button">&times;</span>
-      <div id="store_link_modal_content" class="modal_inner"></div>
-      <div id="share_file_modal_content" class="modal_inner"></div>
-    </div>
-  </div>
+<div id="topbar"></div>
+<canvas id="game"></canvas>
 
-  <!-- 
-      Game canvas and overlay. Emscripten makes some assumptions about how the canvas is positioned in order
-      to translate document to game coordinates
-    -->
-  <div id="canvas_border" class="emscripten_border">
-    <div id="play_content" class="middle center">
-      <div class="edge">
-        <div class="box">
-          <div class="black">
-            <img src="webapp/cover.jpg" class="cover">
-            <p class="title">Drive Mad</p>
-            <p class="author">Fancade</p>
-          </div>
-        </div>
-      </div>
-      <div id="progress_or_play">
-        <progress id="progress" class="loading" value="0" max="100"></progress>
-      </div>
-      <p class="description"></p>
-    </div>
-    <canvas class="emscripten" id="canvas" tabindex=-1>
-    </canvas>
-    <div id="gradient"></div>
-    <div id="webview_content"></div>
-  </div>
+<script>
 
-  <!-- Manual JS, Called from WASM -->
-  <script type="text/javascript" src="webapp/source_min.js"></script>
+const canvas = document.getElementById("game")
+const ctx = canvas.getContext("2d")
 
-  <!-- Auto generated JS -->
-  <script type="text/javascript" src="webapp/index.js"></script>
+canvas.width = window.innerWidth
+canvas.height = window.innerHeight - 60
+
+let car = {x:100,y:300,vx:0,vy:0}
+
+let currentLevel = 1
+let maxUnlocked = localStorage.getItem("maxLevel") || 1
+maxUnlocked = parseInt(maxUnlocked)
+
+const gravity = 0.5
+
+let keys = {}
+
+document.addEventListener("keydown",e=>keys[e.key]=true)
+document.addEventListener("keyup",e=>keys[e.key]=false)
+
+let levels = []
+
+// generate 250 levels
+for(let i=1;i<=250;i++){
+
+let difficulty = i/250
+
+levels.push({
+
+groundY:350 - difficulty*100,
+
+ramps:[
+{
+x:300,
+width:200,
+height:50 + difficulty*100
+}
+],
+
+goal:800 + difficulty*400
+
+})
+
+}
+
+// harder custom levels for 201-250
+for(let i=201;i<=250;i++){
+
+levels[i-1] = {
+
+groundY:320 - (i-200)*2,
+
+ramps:[
+{x:250,width:120,height:80},
+{x:450,width:120,height:120},
+{x:650,width:120,height:160}
+],
+
+goal:900 + (i-200)*30
+
+}
+
+}
+
+// level buttons
+const topbar = document.getElementById("topbar")
+
+for(let i=1;i<=250;i++){
+
+let btn = document.createElement("button")
+btn.innerText=i
+btn.className="levelBtn"
+
+if(i>maxUnlocked) btn.classList.add("locked")
+
+btn.onclick=()=>{
+if(i<=maxUnlocked){
+currentLevel=i
+resetCar()
+}
+}
+
+topbar.appendChild(btn)
+
+}
+
+function updateButtons(){
+
+document.querySelectorAll(".levelBtn").forEach(b=>{
+
+let lvl=parseInt(b.innerText)
+
+if(lvl<=maxUnlocked) b.classList.remove("locked")
+
+})
+
+}
+
+// reset car
+function resetCar(){
+
+car.x=100
+car.y=200
+car.vx=0
+car.vy=0
+
+}
+
+// physics
+function update(){
+
+if(keys["ArrowRight"]) car.vx+=0.5
+if(keys["ArrowLeft"]) car.vx-=0.5
+
+car.vy+=gravity
+
+car.x+=car.vx
+car.y+=car.vy
+
+car.vx*=0.98
+
+let level=levels[currentLevel-1]
+
+// ground
+if(car.y>level.groundY){
+car.y=level.groundY
+car.vy=0
+}
+
+// ramps
+level.ramps.forEach(r=>{
+
+if(
+car.x>r.x &&
+car.x<r.x+r.width &&
+car.y>level.groundY-r.height
+){
+car.y=level.groundY-r.height
+car.vy=0
+}
+
+})
+
+// goal
+if(car.x>level.goal){
+
+if(currentLevel>=maxUnlocked){
+
+maxUnlocked=currentLevel+1
+localStorage.setItem("maxLevel",maxUnlocked)
+
+updateButtons()
+
+}
+
+currentLevel++
+resetCar()
+
+}
+
+}
+
+// draw
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+let level=levels[currentLevel-1]
+
+// ground
+ctx.fillStyle="#666"
+ctx.fillRect(0,level.groundY+20,canvas.width,100)
+
+// ramps
+ctx.fillStyle="#888"
+
+level.ramps.forEach(r=>{
+
+ctx.fillRect(r.x,level.groundY-r.height,r.width,r.height)
+
+})
+
+// goal
+ctx.fillStyle="lime"
+ctx.fillRect(level.goal,level.groundY-60,20,60)
+
+// car
+ctx.fillStyle="red"
+ctx.fillRect(car.x,car.y-20,40,20)
+
+}
+
+// game loop
+function loop(){
+
+update()
+draw()
+
+requestAnimationFrame(loop)
+
+}
+
+resetCar()
+loop()
+
+</script>
+
 </body>
-
 </html>
