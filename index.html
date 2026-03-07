@@ -2,40 +2,52 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Drive Mad 250-Level</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drive Mad 3D Clone - GitHub Friendly</title>
 <style>
-body{margin:0;overflow:hidden;font-family:Arial,sans-serif;background:#111;color:white;}
-#levelBar{position:fixed;top:0;left:0;width:100%;background:#222;padding:5px;display:flex;flex-wrap:wrap;z-index:10;}
-.levelBtn{margin:2px;padding:5px 8px;border:none;background:#555;color:white;font-size:12px;cursor:pointer;}
-.levelBtn.locked{background:#333;color:#777;cursor:not-allowed;}
-canvas{display:block;margin-top:60px;background:#222;}
+body{margin:0;overflow:hidden;background:#111;font-family:Arial,sans-serif;}
+#levelBar{
+  position:fixed;top:0;left:0;width:100%;background:#222;padding:5px;display:flex;flex-wrap:wrap;z-index:10;
+}
+.levelBtn{
+  margin:2px;padding:5px 8px;border:none;background:#555;color:white;font-size:12px;cursor:pointer;
+}
+.levelBtn.locked{
+  background:#333;color:#777;cursor:not-allowed;
+}
+canvas{display:block;margin-top:60px;}
 </style>
 </head>
 <body>
 
 <div id="levelBar"></div>
-<canvas id="gameCanvas"></canvas>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"></script>
 <script>
 
 // =====================
-// Scene Setup
+// Scene & Renderer
 // =====================
-let scene = new THREE.Scene();
+const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x111111);
-let camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
-camera.position.set(0,50,150);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
+camera.position.set(0, 50, 150);
 
-let renderer = new THREE.WebGLRenderer({antialias:true});
+const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight-50);
 document.body.appendChild(renderer.domElement);
 
 // =====================
+// Physics World
+// =====================
+const world = new CANNON.World({
+  gravity: new CANNON.Vec3(0,-9.82,0)
+});
+
+// =====================
 // Lights
 // =====================
-let light = new THREE.DirectionalLight(0xffffff,1);
+const light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(100,200,100);
 scene.add(light);
 scene.add(new THREE.AmbientLight(0x888888));
@@ -43,158 +55,168 @@ scene.add(new THREE.AmbientLight(0x888888));
 // =====================
 // Car
 // =====================
-let carGeom = new THREE.BoxGeometry(10,5,5);
-let carMat = new THREE.MeshStandardMaterial({color:0xff0000});
-let car = new THREE.Mesh(carGeom,carMat);
-car.position.set(0,5,0);
-scene.add(car);
+const carGeom = new THREE.BoxGeometry(10,5,5);
+const carMat = new THREE.MeshStandardMaterial({color:0xff0000});
+const carMesh = new THREE.Mesh(carGeom,carMat);
+scene.add(carMesh);
+
+const carBody = new CANNON.Body({
+  mass:1,
+  shape:new CANNON.Box(new CANNON.Vec3(5,2.5,2.5)),
+  position:new CANNON.Vec3(0,5,0)
+});
+world.addBody(carBody);
 
 // =====================
 // Ground
 // =====================
-let groundGeom = new THREE.BoxGeometry(1000,2,50);
-let groundMat = new THREE.MeshStandardMaterial({color:0x444444});
-let ground = new THREE.Mesh(groundGeom,groundMat);
-ground.position.set(500,0,0);
-scene.add(ground);
+const groundGeom = new THREE.BoxGeometry(2000,2,50);
+const groundMat = new THREE.MeshStandardMaterial({color:0x444444});
+const groundMesh = new THREE.Mesh(groundGeom,groundMat);
+groundMesh.position.set(1000,0,0);
+scene.add(groundMesh);
 
-// =====================
-// Game variables
-// =====================
-let currentLevel = 1;
-let maxUnlocked = parseInt(localStorage.getItem("driveMad3DMax")) || 1;
-let keys = {};
+const groundBody = new CANNON.Body({
+  mass:0,
+  shape:new CANNON.Box(new CANNON.Vec3(1000,1,25)),
+  position:new CANNON.Vec3(1000,0,0)
+});
+world.addBody(groundBody);
 
 // =====================
 // Levels
 // =====================
 let levels = [];
 
-// --- Original 200 levels ---
-// You can replace this with the original level array if available
+// Original 200 levels
 for(let i=1;i<=200;i++){
-    levels.push({
-        ramps:[{x:300+i*2,y:2,width:50,height:10}],
-        goalX:800+i*5
-    });
+  levels.push({
+    ramps:[{x:300+i*2,y:2,width:50,height:10}],
+    goalX:800+i*5
+  });
 }
 
-// --- New 50 levels (201-250) ---
+// New 50 levels 201-250
 for(let i=201;i<=250;i++){
-    levels.push({
-        ramps:[
-            {x:250+(i-200)*10,y:2,width:60,height:15+(i-200)},
-            {x:450+(i-200)*12,y:2,width:70,height:20+(i-200)}
-        ],
-        goalX:900+(i-200)*30
-    });
+  levels.push({
+    ramps:[
+      {x:250+(i-200)*10,y:2,width:60,height:15+(i-200)},
+      {x:450+(i-200)*12,y:2,width:70,height:20+(i-200)}
+    ],
+    goalX:900+(i-200)*30
+  });
 }
 
 // =====================
-// Top buttons (201-250)
+// UI Buttons 201-250
 // =====================
+let currentLevel = 1;
+let maxUnlocked = parseInt(localStorage.getItem("driveMad3DMax"))||1;
 const levelBar = document.getElementById("levelBar");
 for(let i=201;i<=250;i++){
-    let btn = document.createElement("button");
-    btn.innerText = i;
-    btn.className = "levelBtn";
-    if(i>maxUnlocked) btn.classList.add("locked");
-    btn.onclick = ()=>{
-        if(i>maxUnlocked) return;
-        currentLevel=i;
-        resetCar();
-    }
-    levelBar.appendChild(btn);
+  const btn = document.createElement("button");
+  btn.innerText=i;
+  btn.className="levelBtn";
+  if(i>maxUnlocked) btn.classList.add("locked");
+  btn.onclick=()=>{
+    if(i>maxUnlocked) return;
+    currentLevel=i;
+    resetCar();
+  }
+  levelBar.appendChild(btn);
 }
 
 function updateButtons(){
-    document.querySelectorAll(".levelBtn").forEach(b=>{
-        let lvl=parseInt(b.innerText);
-        if(lvl<=maxUnlocked) b.classList.remove("locked");
-    });
+  document.querySelectorAll(".levelBtn").forEach(b=>{
+    let lvl=parseInt(b.innerText);
+    if(lvl<=maxUnlocked) b.classList.remove("locked");
+  });
+}
+
+// =====================
+// Ramps & Goals
+// =====================
+let rampMeshes=[];
+function drawLevel(){
+  rampMeshes.forEach(m=>scene.remove(m));
+  rampMeshes=[];
+  const lvl = levels[currentLevel-1];
+  lvl.ramps.forEach(r=>{
+    const g = new THREE.BoxGeometry(r.width,r.height,50);
+    const m = new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:0x888888}));
+    m.position.set(r.x+r.width/2,r.height/2,0);
+    scene.add(m);
+    rampMeshes.push(m);
+
+    const rampBody = new CANNON.Body({mass:0});
+    rampBody.addShape(new CANNON.Box(new CANNON.Vec3(r.width/2,r.height/2,25)));
+    rampBody.position.set(r.x+r.width/2,r.height/2,0);
+    world.addBody(rampBody);
+  });
+
+  // Goal
+  const goalGeom = new THREE.BoxGeometry(10,20,50);
+  const goalMat = new THREE.MeshStandardMaterial({color:0x00ff00});
+  const goalMesh = new THREE.Mesh(goalGeom,goalMat);
+  goalMesh.position.set(lvl.goalX,10,0);
+  scene.add(goalMesh);
+  rampMeshes.push(goalMesh);
 }
 
 // =====================
 // Controls
 // =====================
+let keys={};
 document.addEventListener("keydown",e=>keys[e.key]=true);
 document.addEventListener("keyup",e=>keys[e.key]=false);
 
-// =====================
-// Physics
-// =====================
-let gravity=-0.5;
-
 function resetCar(){
-    car.position.set(0,5,0);
-    car.velocity = new THREE.Vector3(0,0,0);
+  carBody.position.set(0,5,0);
+  carBody.velocity.set(0,0,0);
+  carBody.angularVelocity.set(0,0,0);
+  carBody.quaternion.set(0,0,0,1);
+}
+
+// =====================
+// Game loop
+// =====================
+function animate(){
+  requestAnimationFrame(animate);
+
+  // Apply controls
+  if(keys["ArrowRight"]||keys["d"]) carBody.applyForce(new CANNON.Vec3(200,0,0), carBody.position);
+  if(keys["ArrowLeft"]||keys["a"]) carBody.applyForce(new CANNON.Vec3(-200,0,0), carBody.position);
+
+  world.step(1/60);
+
+  // Sync mesh with physics
+  carMesh.position.copy(carBody.position);
+  carMesh.quaternion.copy(carBody.quaternion);
+
+  drawLevel();
+
+  // Camera follow
+  camera.position.x = carBody.position.x + 150;
+  camera.position.y = carBody.position.y + 50;
+  camera.lookAt(carBody.position.x, carBody.position.y, 0);
+
+  // Goal check
+  const lvl = levels[currentLevel-1];
+  if(carBody.position.x>lvl.goalX){
+    if(currentLevel>=maxUnlocked){
+      maxUnlocked=currentLevel+1;
+      localStorage.setItem("driveMad3DMax",maxUnlocked);
+      updateButtons();
+    }
+    currentLevel++;
+    if(currentLevel>levels.length) currentLevel=levels.length;
+    resetCar();
+  }
+
+  renderer.render(scene,camera);
 }
 
 resetCar();
-
-// =====================
-// Game Loop
-// =====================
-let rampMeshes=[];
-function drawLevel(){
-    rampMeshes.forEach(m=>scene.remove(m));
-    rampMeshes=[];
-
-    let lvl = levels[currentLevel-1];
-    lvl.ramps.forEach(r=>{
-        let g = new THREE.BoxGeometry(r.width,r.height,50);
-        let m = new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:0x888888}));
-        m.position.set(r.x,r.height/2,0);
-        scene.add(m);
-        rampMeshes.push(m);
-    });
-
-    // Goal
-    let goalGeom = new THREE.BoxGeometry(10,20,50);
-    let goalMat = new THREE.MeshStandardMaterial({color:0x00ff00});
-    let goalMesh = new THREE.Mesh(goalGeom,goalMat);
-    goalMesh.position.set(lvl.goalX,10,0);
-    scene.add(goalMesh);
-    rampMeshes.push(goalMesh);
-}
-
-function update(){
-    if(!car.velocity) car.velocity=new THREE.Vector3(0,0,0);
-    if(keys["ArrowRight"]||keys["d"]) car.velocity.x+=0.5;
-    if(keys["ArrowLeft"]||keys["a"]) car.velocity.x-=0.5;
-    car.velocity.y+=gravity;
-
-    car.position.add(car.velocity);
-
-    // Ground collision
-    if(car.position.y<5){ car.position.y=5; car.velocity.y=0; }
-
-    // Goal check
-    let lvl = levels[currentLevel-1];
-    if(car.position.x>lvl.goalX){
-        if(currentLevel>=maxUnlocked){
-            maxUnlocked=currentLevel+1;
-            localStorage.setItem("driveMad3DMax",maxUnlocked);
-            updateButtons();
-        }
-        currentLevel++;
-        if(currentLevel>levels.length) currentLevel=levels.length;
-        resetCar();
-    }
-}
-
-// =====================
-// Animate
-// =====================
-function animate(){
-    requestAnimationFrame(animate);
-    update();
-    drawLevel();
-    camera.position.x=car.position.x+150;
-    camera.lookAt(car.position.x,car.position.y,0);
-    renderer.render(scene,camera);
-}
-
 animate();
 
 </script>
