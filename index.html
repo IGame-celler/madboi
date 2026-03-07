@@ -87,54 +87,51 @@
       }
     }
 
-    // ----- Floating 50 Test Level Buttons -----
-    document.addEventListener("DOMContentLoaded", () => {
-      if (typeof levels === "undefined") {
-        console.error("levels array not found. Original levels may not be loaded yet.");
-        return;
-      }
-
-      const toolbar = document.getElementById("floating_level_toolbar");
-
-      // Create 50 test buttons (200–249)
-      for (let i = 0; i < 50; i++) {
-        const btn = document.createElement("button");
-        const levelId = 200 + i;
-        btn.innerText = levelId;
-        btn.style.padding = "4px 8px";
-        btn.style.fontSize = "12px";
-        btn.style.cursor = "pointer";
-
-        // Map to existing levels for testing
-        const layoutIndex = i % levels.length;
-
-        btn.onclick = () => {
-          if (typeof levels !== "undefined" && levels[layoutIndex]) {
-            loadLevel(levels[layoutIndex]);
-          } else {
-            console.error("Level data not found for Level ID:", levelId);
-          }
-        };
-
-        toolbar.appendChild(btn);
-      }
-
-      // ----- Load Player Progress on Start -----
-      const startLevelIndex = getPlayerProgress() - 1; // 0-indexed
-      if (levels[startLevelIndex]) {
-        loadLevel(levels[startLevelIndex]);
-      } else {
-        console.error("Starting level not found.");
-      }
-    });
-
-    // Example: hook this into your Fancade level-complete callback
-    // Replace `onLevelComplete(levelNumber)` with your game's actual level-complete event
     function onLevelComplete(levelNumber) {
       saveProgress(levelNumber);
     }
 
-    // Expose progress functions globally if needed
+    // ----- Wait for loadLevel and levels to exist before starting -----
+    function waitForGameReady(callback) {
+      const interval = setInterval(() => {
+        if (typeof levels !== "undefined" && typeof loadLevel === "function") {
+          clearInterval(interval);
+          callback();
+        }
+      }, 50);
+    }
+
+    // ----- Floating 50 Test Level Buttons -----
+    document.addEventListener("DOMContentLoaded", () => {
+      waitForGameReady(() => {
+        // ----- Floating toolbar -----
+        const toolbar = document.getElementById("floating_level_toolbar");
+        for (let i = 0; i < 50; i++) {
+          const btn = document.createElement("button");
+          const levelId = 200 + i;
+          btn.innerText = levelId;
+          btn.style.padding = "4px 8px";
+          btn.style.fontSize = "12px";
+          btn.style.cursor = "pointer";
+
+          const layoutIndex = i % levels.length;
+
+          btn.onclick = () => {
+            if (levels[layoutIndex]) loadLevel(levels[layoutIndex]);
+          };
+
+          toolbar.appendChild(btn);
+        }
+
+        // ----- Load player progress -----
+        const startLevelIndex = getPlayerProgress() - 1;
+        if (levels[startLevelIndex]) {
+          loadLevel(levels[startLevelIndex]);
+        }
+      });
+    });
+
+    // Expose globally if needed
     window.getPlayerProgress = getPlayerProgress;
     window.saveProgress = saveProgress;
     window.onLevelComplete = onLevelComplete;
