@@ -1,228 +1,137 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-us">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Drive Mad 3D - 250 Levels</title>
-<style>
-body{margin:0;overflow:hidden;background:#111;font-family:Arial,sans-serif;}
-#levelBar{
-  position:fixed; top:0; left:0; width:100%; background:#222; padding:5px; display:flex; flex-wrap:wrap; z-index:100;
-}
-.levelBtn{
-  margin:2px; padding:5px 8px; font-size:12px; border:none; background:#555; color:white; cursor:pointer;
-}
-.levelBtn.locked{
-  background:#333; color:#777; cursor:not-allowed;
-}
-</style>
-</head>
-<body>
-
-<div id="levelBar"></div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"></script>
-<script>
-
-// =====================
-// Scene & Renderer
-// =====================
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x111111);
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
-camera.position.set(0,50,150);
-
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth, window.innerHeight-50);
-document.body.appendChild(renderer.domElement);
-
-// =====================
-// Physics World
-// =====================
-const world = new CANNON.World({ gravity: new CANNON.Vec3(0,-9.82,0) });
-
-// =====================
-// Lights
-// =====================
-const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(100,200,100);
-scene.add(light);
-scene.add(new THREE.AmbientLight(0x888888));
-
-// =====================
-// Car
-// =====================
-const carGeom = new THREE.BoxGeometry(10,5,5);
-const carMat = new THREE.MeshStandardMaterial({color:0xff0000});
-const carMesh = new THREE.Mesh(carGeom,carMat);
-scene.add(carMesh);
-
-const carBody = new CANNON.Body({
-  mass:1,
-  shape:new CANNON.Box(new CANNON.Vec3(5,2.5,2.5)),
-  position:new CANNON.Vec3(0,5,0)
-});
-world.addBody(carBody);
-
-// =====================
-// Ground
-// =====================
-const groundGeom = new THREE.BoxGeometry(2000,2,50);
-const groundMat = new THREE.MeshStandardMaterial({color:0x444444});
-const groundMesh = new THREE.Mesh(groundGeom,groundMat);
-groundMesh.position.set(1000,0,0);
-scene.add(groundMesh);
-
-const groundBody = new CANNON.Body({
-  mass:0,
-  shape:new CANNON.Box(new CANNON.Vec3(1000,1,25)),
-  position:new CANNON.Vec3(1000,0,0)
-});
-world.addBody(groundBody);
-
-// =====================
-// Levels
-// =====================
-let levels = [];
-// --- Original 200 levels placeholders ---
-for(let i=1;i<=200;i++){
-  levels.push({ ramps:[{x:300+i*2,y:2,width:50,height:10}], goalX:800+i*5 });
-}
-// --- New 50 levels 201-250 ---
-for(let i=201;i<=250;i++){
-  levels.push({
-    ramps:[
-      {x:250+(i-200)*10,y:2,width:60,height:15+(i-200)},
-      {x:450+(i-200)*12,y:2,width:70,height:20+(i-200)},
-      {x:650+(i-200)*15,y:2,width:80,height:25+(i-200)}
-    ],
-    goalX:900+(i-200)*30
-  });
-}
-
-// =====================
-// Level Buttons 201-250
-// =====================
-let currentLevel = 1;
-let maxUnlocked = parseInt(localStorage.getItem("driveMad3DMax"))||200;
-const levelBar = document.getElementById("levelBar");
-
-for(let i=201;i<=250;i++){
-  const btn = document.createElement("button");
-  btn.innerText=i;
-  btn.className="levelBtn";
-  if(i>maxUnlocked) btn.classList.add("locked");
-  btn.onclick=()=>{
-    if(i>maxUnlocked) return;
-    currentLevel=i;
-    setupLevel(currentLevel-1);
-    resetCar();
-  }
-  levelBar.appendChild(btn);
-}
-
-function updateButtons(){
-  document.querySelectorAll(".levelBtn").forEach(b=>{
-    let lvl=parseInt(b.innerText);
-    if(lvl<=maxUnlocked) b.classList.remove("locked");
-  });
-}
-
-// =====================
-// Ramps & Goal Setup
-// =====================
-let rampMeshes=[], rampBodies=[];
-function setupLevel(levelIndex){
-  rampMeshes.forEach(m=>scene.remove(m));
-  rampMeshes=[];
-  rampBodies.forEach(b=>world.removeBody(b));
-  rampBodies=[];
-  const lvl = levels[levelIndex];
-
-  lvl.ramps.forEach(r=>{
-    const g = new THREE.BoxGeometry(r.width,r.height,50);
-    const m = new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:0x888888}));
-    m.position.set(r.x+r.width/2,r.height/2,0);
-    scene.add(m);
-    rampMeshes.push(m);
-
-    const body = new CANNON.Body({mass:0});
-    body.addShape(new CANNON.Box(new CANNON.Vec3(r.width/2,r.height/2,25)));
-    body.position.set(r.x+r.width/2,r.height/2,0);
-    world.addBody(body);
-    rampBodies.push(body);
-  });
-
-  // Goal
-  const goalGeom = new THREE.BoxGeometry(10,20,50);
-  const goalMat = new THREE.MeshStandardMaterial({color:0x00ff00});
-  const goalMesh = new THREE.Mesh(goalGeom,goalMat);
-  goalMesh.position.set(lvl.goalX,10,0);
-  scene.add(goalMesh);
-  rampMeshes.push(goalMesh);
-}
-
-// =====================
-// Controls
-// =====================
-let keys={};
-document.addEventListener("keydown",e=>keys[e.key]=true);
-document.addEventListener("keyup",e=>keys[e.key]=false);
-
-// =====================
-// Reset Car
-// =====================
-function resetCar(){
-  carBody.position.set(0,5,0);
-  carBody.velocity.set(0,0,0);
-  carBody.angularVelocity.set(0,0,0);
-  carBody.quaternion.set(0,0,0,1);
-}
-
-// =====================
-// Game Loop
-// =====================
-function animate(){
-  requestAnimationFrame(animate);
-
-  // Controls
-  if(keys["ArrowRight"]||keys["d"]) carBody.applyForce(new CANNON.Vec3(200,0,0), carBody.position);
-  if(keys["ArrowLeft"]||keys["a"]) carBody.applyForce(new CANNON.Vec3(-200,0,0), carBody.position);
-
-  world.step(1/60);
-
-  carMesh.position.copy(carBody.position);
-  carMesh.quaternion.copy(carBody.quaternion);
-
-  // Camera follow
-  camera.position.x = carBody.position.x + 150;
-  camera.position.y = carBody.position.y + 50;
-  camera.lookAt(carBody.position.x, carBody.position.y, 0);
-
-  // Goal check
-  const lvl = levels[currentLevel-1];
-  if(carBody.position.x>lvl.goalX){
-    if(currentLevel>=maxUnlocked){
-      maxUnlocked=currentLevel+1;
-      localStorage.setItem("driveMad3DMax",maxUnlocked);
-      updateButtons();
+  <base href="https://cdn.jsdelivr.net/gh/genizy/dmad-poki@49b5ab6b987f5f3be58f9dae59c92e8fc1aab9b0/">
+  <script>
+    window.assgdd = {
+      "ancestorOrigins": {
+        "0": "https://games.poki.com",
+        "1": "https://poki.com"
+      },
+      "href": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com/cc1bc57a-e355-4696-97c2-097bf6188606/index.html?country=US&url_referrer=https%3A%2F%2Fpoki.com%2F&site_id=3&iso_lang=en&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdrive-mad&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=78%2C93%2C96%2C103%2C377%2C390%2C400%2C893%2C929%2C1126%2C1139%2C1140%2C1141%2C1143%2C1147%2C1163%2C1185%2C1190%2C1193%2C1197&special_condition=landing&game_id=f9564e4e-ef25-4e4b-ba67-cb11a1576bbd&game_version_id=cc1bc57a-e355-4696-97c2-097bf6188606&inspector=0",
+      "origin": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
+      "protocol": "https:",
+      "host": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
+      "hostname": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
+      "port": "",
+      "pathname": "/cc1bc57a-e355-4696-97c2-097bf6188606/index.html",
+      "search": "?country=US&url_referrer=https%3A%2F%2Fpoki.com%2F&site_id=3&iso_lang=en&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdrive-mad&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=78%2C93%2C96%2C103%2C377%2C390%2C400%2C893%2C929%2C1126%2C1139%2C1140%2C1141%2C1143%2C1147%2C1163%2C1185%2C1190%2C1193%2C1197&special_condition=landing&game_id=f9564e4e-ef25-4e4b-ba67-cb11a1576bbd&game_version_id=cc1bc57a-e355-4696-97c2-097bf6188606&inspector=0",
+      "hash": ""
     }
-    currentLevel++;
-    if(currentLevel>levels.length) currentLevel=levels.length;
-    setupLevel(currentLevel-1);
-    resetCar();
-  }
+  </script>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Drive Mad</title>
+  <meta name="description" content="">
+  <meta name="google" content="notranslate">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <link rel="stylesheet" href="webapp/fancade.css">
+  <link rel="icon" href="webapp/favicon.ico">
+  <script src="poki-sdk.js"></script>
+</head>
 
-  renderer.render(scene,camera);
-}
+<body id="body">
 
-// =====================
-// Start Game
-// =====================
-setupLevel(currentLevel-1);
-resetCar();
-animate();
+  <!-- Modal dialog div -->
+  <div id="modal_parent">
+    <div id="modal_content">
+      <span id="modal_close_button">&times;</span>
+      <div id="store_link_modal_content" class="modal_inner"></div>
+      <div id="share_file_modal_content" class="modal_inner"></div>
+    </div>
+  </div>
 
-</script>
+  <!-- Game canvas and overlay -->
+  <div id="canvas_border" class="emscripten_border">
+    <div id="play_content" class="middle center">
+      <div class="edge">
+        <div class="box">
+          <div class="black">
+            <img src="webapp/cover.jpg" class="cover">
+            <p class="title">Drive Mad</p>
+            <p class="author">Fancade</p>
+          </div>
+        </div>
+      </div>
+      <div id="progress_or_play">
+        <progress id="progress" class="loading" value="0" max="100"></progress>
+      </div>
+      <p class="description"></p>
+
+      <!-- Button to access new 50 levels -->
+      <button onclick="showNewLevelSelect()" style="margin-top:20px;">Play New 50 Levels</button>
+    </div>
+    <canvas class="emscripten" id="canvas" tabindex=-1>
+    </canvas>
+    <div id="gradient"></div>
+    <div id="webview_content"></div>
+  </div>
+
+  <!-- Manual JS, Called from WASM -->
+  <script type="text/javascript" src="webapp/source_min.js"></script>
+
+  <!-- Auto generated JS -->
+  <script type="text/javascript" src="webapp/index.js"></script>
+
+  <!-- ===== New 50 Levels Menu ===== -->
+  <div id="new_level_select" style="display:none; text-align:center; padding:20px;">
+    <h2>New 50 Levels</h2>
+    <div id="new_level_buttons" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:10px; max-width:600px; margin: 0 auto;">
+      <!-- Buttons will be generated here -->
+    </div>
+    <button style="margin-top:20px;" onclick="backToMainMenu()">Back</button>
+  </div>
+
+  <script>
+    // Define the 50 new levels (IDs 201-250)
+    const NEW_LEVELS = [];
+    for (let i = 201; i <= 250; i++) {
+      NEW_LEVELS.push({
+        id: i,
+        name: "Level " + i,
+        layout: "layout_data_" + i // Replace with actual level data
+      });
+    }
+
+    // Show the new level select menu
+    function showNewLevelSelect() {
+      const container = document.getElementById('new_level_buttons');
+      container.innerHTML = '';
+
+      NEW_LEVELS.forEach(level => {
+        const btn = document.createElement('button');
+        btn.innerText = level.name;
+        btn.style.padding = "10px";
+        btn.style.fontSize = "14px";
+        btn.onclick = () => loadNewLevel(level.id);
+        container.appendChild(btn);
+      });
+
+      // Hide main menu
+      document.getElementById('play_content').style.display = 'none';
+      document.getElementById('new_level_select').style.display = 'block';
+    }
+
+    // Back to main menu
+    function backToMainMenu() {
+      document.getElementById('new_level_select').style.display = 'none';
+      document.getElementById('play_content').style.display = 'block';
+    }
+
+    // Load a new level
+    function loadNewLevel(levelId) {
+      const level = NEW_LEVELS.find(l => l.id === levelId);
+      if (!level) return;
+
+      // Replace this with your existing level loading function
+      console.log("Loading level:", level.id, level.layout);
+      // Example: loadLevel(level.layout);
+
+      // Hide level select after starting
+      document.getElementById('new_level_select').style.display = 'none';
+    }
+  </script>
+
 </body>
 </html>
