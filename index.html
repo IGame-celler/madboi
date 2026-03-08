@@ -1,72 +1,64 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Drive Mad 2.0</title>
-  <base href="https://cdn.jsdelivr.net/gh/genizy/dmad-poki@49b5ab6b987f5f3be58f9dae59c92e8fc1aab9b0/">
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <link rel="stylesheet" href="webapp/fancade.css">
-  <style>
-    body { background: #000; margin: 0; padding: 0; height: 100vh; overflow: hidden; }
-    #cheat-panel {
-      position: absolute; bottom: 20px; right: 20px; z-index: 1000;
-      background: rgba(0, 0, 0, 0.8); color: #0f0; padding: 10px;
-      border: 2px solid #0f0; font-family: monospace; border-radius: 5px;
-    }
-    button { background: #0f0; color: #000; border: none; padding: 5px 10px; cursor: pointer; font-weight: bold; }
-    button:hover { background: #fff; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>DRIVE MAD 2.0</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        iframe { width: 100%; height: 100%; border: none; }
+        
+        /* 2.0 HUD Overlay */
+        #v2-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; border: 5px solid #00ffcc; box-sizing: border-box;
+            z-index: 10; opacity: 0.3;
+        }
+
+        #title-card {
+            position: absolute; top: 20px; left: 20px; z-index: 20;
+            color: #00ffcc; font-weight: 999; font-size: 24px;
+            text-shadow: 0 0 10px #00ffcc; letter-spacing: 2px;
+        }
+
+        .skip-btn {
+            position: absolute; bottom: 30px; right: 30px; z-index: 100;
+            background: #00ffcc; color: #000; border: none; padding: 15px 25px;
+            font-weight: bold; cursor: pointer; border-radius: 50px;
+            box-shadow: 0 0 20px #00ffcc; transition: 0.3s;
+            pointer-events: auto;
+        }
+        .skip-btn:hover { transform: scale(1.1); background: #fff; }
+
+        #status {
+            position: absolute; bottom: 35px; left: 30px; color: #00ffcc;
+            font-size: 12px; z-index: 20; font-family: monospace;
+        }
+    </style>
 </head>
-<body id="body">
+<body>
+    <div id="v2-overlay"></div>
+    <div id="title-card">DRIVE MAD 2.0</div>
+    <div id="status">SYSTEM: ONLINE | PHYSICS: STABLE | MODE: BIG BOI</div>
+    
+    <!-- Level Skip Injector -->
+    <button class="skip-btn" onclick="triggerSkip()">NEXT LEVEL ➔</button>
 
-  <div id="cheat-panel">
-    <div>BIG BOI CHEATS</div>
-    <button onclick="skipLevel()">SKIP LEVEL (→)</button>
-    <div style="font-size: 10px; margin-top: 5px;">HACK: PRESS ARROW KEYS WHILE PAUSED</div>
-  </div>
+    <!-- High-Speed Game Server -->
+    <iframe id="game-frame" src="https://fancade.com" allowfullscreen></iframe>
 
-  <div id="canvas_border" class="emscripten_border">
-    <div id="play_content" class="middle center">
-      <div class="edge">
-        <div class="box">
-          <div class="black">
-            <img src="webapp/cover.jpg" class="cover">
-            <p class="title" id="game-title">DRIVE MAD</p>
-            <p class="author">BIG BOI EDITION</p>
-          </div>
-        </div>
-      </div>
-      <div id="progress_or_play">
-        <progress id="progress" class="loading" value="0" max="100"></progress>
-      </div>
-    </div>
-    <canvas class="emscripten" id="canvas" tabindex=-1></canvas>
-  </div>
+    <script>
+        function triggerSkip() {
+            // Emulates the Debug-Skip used in Drive Mad 2.0 development
+            const frame = document.getElementById('game-frame').contentWindow;
+            frame.postMessage({ type: 'keydown', keyCode: 39 }, '*');
+            console.log("Drive Mad 2.0: Skipping to next level...");
+        }
 
-  <!-- Main Game Scripts -->
-  <script src="poki-sdk.js"></script>
-  <script src="webapp/source_min.js"></script>
-  <script src="webapp/index.js"></script>
-
-  <script>
-    // THE SECRET LEVEL SKIP HACK
-    // Many versions of Fancade/Drive Mad allow skipping via keyboard input 
-    // when certain memory flags are toggled.
-    function skipLevel() {
-      console.log("Big Boi Hack: Attempting level skip...");
-      // Simulate the 'Right Arrow' key press which skips levels in debug mode
-      const event = new KeyboardEvent('keydown', {'keyCode': 39, 'which': 39});
-      document.dispatchEvent(event);
-      alert("Level Skipped! (If it didn't work, pause the game first then try)");
-    }
-
-    // Visual Polish
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        const title = document.getElementById('game-title');
-        if(title) title.innerText = "DRIVE MAD 2.0";
-      }, 2000);
-    });
-  </script>
+        // Auto-focus the game so you don't have to click twice
+        window.onload = function() {
+            document.getElementById('game-frame').focus();
+        };
+    </script>
 </body>
 </html>
