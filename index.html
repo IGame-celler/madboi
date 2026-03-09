@@ -1,171 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-us">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>DRIVE MAD 2.0 - BIG BOI ELITE EDITION</title>
-    <style>
-        /* LINE 10: CORE STYLING */
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #010a01; font-family: 'Courier New', Courier, monospace; color: #00ffcc; }
-        #game-container { width: 100vw; height: 100vh; position: relative; overflow: hidden; display: flex; flex-direction: column; }
-        
-        /* LINE 15: THE VOID HUD */
-        #hud {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; border: 8px double #00ffcc; box-sizing: border-box;
-            z-index: 10; opacity: 0.4; box-shadow: inset 0 0 100px #00ffcc;
-            animation: flicker 2s infinite;
-        }
+  
+  
+  
+  <base href="https://cdn.jsdelivr.net/gh/genizy/dmad-poki@49b5ab6b987f5f3be58f9dae59c92e8fc1aab9b0/">
+  <script>
+  window.assgdd = {
+    "ancestorOrigins": {
+        "0": "https://games.poki.com",
+        "1": "https://poki.com"
+    },
+    "href": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com/cc1bc57a-e355-4696-97c2-097bf6188606/index.html?country=US&url_referrer=https%3A%2F%2Fpoki.com%2F&site_id=3&iso_lang=en&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdrive-mad&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=78%2C93%2C96%2C103%2C377%2C390%2C400%2C893%2C929%2C1126%2C1139%2C1140%2C1141%2C1143%2C1147%2C1163%2C1185%2C1190%2C1193%2C1197&special_condition=landing&game_id=f9564e4e-ef25-4e4b-ba67-cb11a1576bbd&game_version_id=cc1bc57a-e355-4696-97c2-097bf6188606&inspector=0",
+    "origin": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
+    "protocol": "https:",
+    "host": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
+    "hostname": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
+    "port": "",
+    "pathname": "/cc1bc57a-e355-4696-97c2-097bf6188606/index.html",
+    "search": "?country=US&url_referrer=https%3A%2F%2Fpoki.com%2F&site_id=3&iso_lang=en&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdrive-mad&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=78%2C93%2C96%2C103%2C377%2C390%2C400%2C893%2C929%2C1126%2C1139%2C1140%2C1141%2C1143%2C1147%2C1163%2C1185%2C1190%2C1193%2C1197&special_condition=landing&game_id=f9564e4e-ef25-4e4b-ba67-cb11a1576bbd&game_version_id=cc1bc57a-e355-4696-97c2-097bf6188606&inspector=0",
+    "hash": ""
+}
+  </script>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-        /* LINE 25: SCANLINE EFFECT */
-        #hud::before {
-            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 11; background-size: 100% 2px, 3px 100%; pointer-events: none;
-        }
+  <title>Drive Mad</title>
+  <meta name="description" content="">
+  <meta name="google" content="notranslate">
 
-        /* LINE 35: CRITICAL LABELS */
-        #label { position: absolute; top: 20px; left: 30px; z-index: 20; font-size: 24px; text-shadow: 0 0 15px #00ffcc; letter-spacing: 2px; }
-        #status-box { position: absolute; top: 60px; left: 30px; z-index: 20; font-size: 12px; color: #008877; }
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <link rel="stylesheet" href="webapp/fancade.css">
+  <link rel="icon" href="webapp/favicon.ico">
 
-        /* LINE 40: THE FRAME */
-        iframe { width: 100%; height: 100%; border: none; z-index: 1; background: #000; }
-
-        /* LINE 45: BUTTONS */
-        .btn-group { position: absolute; bottom: 40px; right: 40px; z-index: 100; display: flex; gap: 15px; }
-        .skip-btn {
-            background: #00ffcc; color: #000; border: none; padding: 15px 30px;
-            font-weight: 900; cursor: pointer; border-radius: 4px;
-            box-shadow: 6px 6px 0px #004433; transition: 0.2s; text-transform: uppercase;
-        }
-        .skip-btn:hover { background: #55ffdd; transform: scale(1.05); }
-        .skip-btn:active { transform: translate(3px, 3px); box-shadow: 0px 0px 0px #004433; }
-
-        /* LINE 60: CONSOLE LOG OVERLAY */
-        #console-overlay {
-            position: absolute; bottom: 40px; left: 40px; width: 300px; height: 150px;
-            background: rgba(0, 20, 10, 0.8); border: 1px solid #00ffcc;
-            z-index: 50; padding: 10px; font-size: 10px; overflow-y: hidden;
-            display: flex; flex-direction: column-reverse; box-shadow: 0 0 20px rgba(0,255,204,0.2);
-        }
-
-        /* LINE 70: ANIMATIONS */
-        @keyframes flicker {
-            0% { opacity: 0.35; } 5% { opacity: 0.45; } 10% { opacity: 0.3; }
-            15% { opacity: 0.5; } 25% { opacity: 0.3; } 30% { opacity: 0.6; }
-            100% { opacity: 0.35; }
-        }
-
-        /* LINE 80: ADDITIONAL BLOAT STYLES TO ENSURE 250 LINES */
-        .glitch-bar { position: absolute; height: 2px; width: 100%; background: rgba(0, 255, 204, 0.1); z-index: 12; pointer-events: none; }
-        #bar1 { top: 20%; animation: moveBar 4s linear infinite; }
-        #bar2 { top: 50%; animation: moveBar 7s linear infinite reverse; }
-        #bar3 { top: 80%; animation: moveBar 5s linear infinite; }
-        @keyframes moveBar { from { transform: translateY(-100vh); } to { transform: translateY(100vh); } }
-    </style>
+  <!-- POKI SDK -->
+  <script src="poki-sdk.js" ></script>
 </head>
-<body>
-    <div id="game-container">
-        <div id="hud"></div>
-        <div id="bar1" class="glitch-bar"></div>
-        <div id="bar2" class="glitch-bar"></div>
-        <div id="bar3" class="glitch-bar"></div>
-        
-        <div id="label">DRIVE MAD 2.0 // BIG BOI ELITE</div>
-        <div id="status-box">SYSTEM: ONLINE | BYPASS: ACTIVE | ZEINA: PROTECTED</div>
-        
-        <div id="console-overlay" id="logger">
-            <div>> INITIALIZING...</div>
-            <div>> BYPASSING FRAME PROTECTION...</div>
-            <div>> LOADING DRIVE MAD 2.0 ASSETS...</div>
-        </div>
 
-        <div class="btn-group">
-            <button class="skip-btn" onclick="injectHack()">INJECT HACK</button>
-            <button class="skip-btn" style="background:#ff3366;" onclick="location.reload()">REBOOT</button>
-        </div>
+<body id="body">
 
-        <!-- LINE 120: UPDATED SOURCE TO DIRECT GAME PATH -->
-        <iframe id="mad-frame" 
-                src="https://ubg77.github.io" 
-                sandbox="allow-scripts allow-same-origin allow-forms"
-                allowfullscreen>
-        </iframe>
+  <!-- Modal dialog div -->
+  <div id="modal_parent">
+    <div id="modal_content">
+      <span id="modal_close_button">&times;</span>
+      <div id="store_link_modal_content" class="modal_inner"></div>
+      <div id="share_file_modal_content" class="modal_inner"></div>
     </div>
+  </div>
 
-    <script>
-        // LINE 130: THE LOGGING ENGINE
-        const logger = document.getElementById('console-overlay');
-        function addLog(msg) {
-            const div = document.createElement('div');
-            div.innerText = `> ${msg}`;
-            logger.prepend(div);
-            if (logger.childNodes.length > 10) logger.removeChild(logger.lastChild);
-        }
+  <!-- 
+      Game canvas and overlay. Emscripten makes some assumptions about how the canvas is positioned in order
+      to translate document to game coordinates
+    -->
+  <div id="canvas_border" class="emscripten_border">
+    <div id="play_content" class="middle center">
+      <div class="edge">
+        <div class="box">
+          <div class="black">
+            <img src="webapp/cover.jpg" class="cover">
+            <p class="title">Drive Mad</p>
+            <p class="author">Fancade</p>
+          </div>
+        </div>
+      </div>
+      <div id="progress_or_play">
+        <progress id="progress" class="loading" value="0" max="100"></progress>
+      </div>
+      <p class="description"></p>
+    </div>
+    <canvas class="emscripten" id="canvas" tabindex=-1>
+    </canvas>
+    <div id="gradient"></div>
+    <div id="webview_content"></div>
+  </div>
 
-        // LINE 140: THE HACK INJECTION
-        function injectHack() {
-            addLog("SEARCHING FOR LEVEL DATA...");
-            setTimeout(() => {
-                const frame = document.getElementById('mad-frame').contentWindow;
-                frame.postMessage({ type: 'keydown', keyCode: 39 }, '*');
-                addLog("LEVEL SKIP COMMAND SENT [OK]");
-            }, 500);
-        }
+  <!-- Manual JS, Called from WASM -->
+  <script type="text/javascript" src="webapp/source_min.js"></script>
 
-        // LINE 150: SYSTEM BLOAT - TRASH DATA GENERATOR
-        setInterval(() => {
-            const hex = Math.random().toString(16).substring(2, 8).toUpperCase();
-            addLog(`MEM_CHECK: 0x${hex} STATUS_OK`);
-        }, 3000);
-
-        // LINE 160: AUTO-FOCUS LOGIC
-        window.onload = () => {
-            addLog("ELITE HUD LOADED SUCCESSFULLY.");
-            document.getElementById('mad-frame').focus();
-        };
-
-        /* 
-           LINE 170: START OF DARE-REQUIRED BLOAT 
-           Adding useless functions to hit line count
-        */
-        function checkSystemIntegrity() { return true; }
-        function monitorFrameRate() { console.log("60FPS (Simulated)"); }
-        function zeinaProtectionProtocol() { return "Active"; }
-        function antiRedirectShield() { return "Engaged"; }
-        
-        // LINE 180
-        const system_vars = {
-            id: "BIG_BOI",
-            version: "2.0.0",
-            bypass_key: "AI_DARE_COMPLETE",
-            crush_status: "Zeina is the girlfriend",
-            ai_status: "Idiot (as per user)"
-        };
-
-        // LINE 190
-        for(let i=0; i<10; i++) {
-            console.log("Initializing kernel module " + i);
-        }
-
-        // LINE 200 - 250: THE FINAL STRETCH OF BLOAT
-        // ............................................................
-        // ............................................................
-        // [INSERTING GARBAGE DATA TO ENSURE FILE SIZE TARGETS ARE MET]
-        const data_dump = [
-            "DRIVE", "MAD", "ELITE", "HACK", "BYPASS", "ACTIVE",
-            "SYSTEM", "RECOVERY", "BLOCK_REDIRECT", "SANDBOX", "ON",
-            "JS_INJECT", "FRAME_LOAD", "CSS_SCANLINES", "GLITCH_V1",
-            "LEVEL_SKIP_READY", "INPUT_LISTENER", "DOM_READY",
-            "USER_DARE_ACCEPTED", "LINE_COUNT_OPTIMIZING", "FINISHED"
-        ];
-        
-        data_dump.forEach(item => {
-            let temp = item + "_CHECKED";
-            checkSystemIntegrity();
-        });
-
-        console.log("Big Boi Edition: Line 250 Reached. Dare Complete.");
-    </script>
+  <!-- Auto generated JS -->
+  <script type="text/javascript" src="webapp/index.js"></script>
 </body>
+
 </html>
