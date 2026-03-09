@@ -6,24 +6,17 @@
     <title>DRIVE MAD 2.0 - BIG BOI EDITION</title>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Courier New', Courier, monospace; }
-        
-        /* The No-Redirect Wrapper */
         #game-container { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
         iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; }
-
-        /* V2.0 Custom HUD */
         #hud {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; border: 4px solid #00ffcc; box-sizing: border-box;
             z-index: 10; opacity: 0.3; box-shadow: inset 0 0 40px #00ffcc;
         }
-
         #label {
             position: absolute; top: 15px; left: 20px; z-index: 20;
             color: #00ffcc; font-weight: bold; font-size: 20px; text-shadow: 0 0 10px #00ffcc;
         }
-
-        /* Hack Button */
         .skip-btn {
             position: absolute; bottom: 30px; right: 30px; z-index: 100;
             background: #00ffcc; color: #000; border: none; padding: 12px 24px;
@@ -37,23 +30,21 @@
     <div id="game-container">
         <div id="hud"></div>
         <div id="label">DRIVE MAD 2.0 // BIG BOI</div>
-        
-        <!-- Level Skip Hack -->
         <button class="skip-btn" onclick="skip()">SKIP LEVEL</button>
 
-        <!-- No-Redirect Proxy Source -->
-        <iframe id="mad-frame" src="https://ubg77.github.io/game131022/drive-mad/" allowfullscreen></iframe>
+        <!-- ADDED SANDBOX ATTRIBUTE TO PREVENT REDIRECTS -->
+        <iframe id="mad-frame" 
+                src="https://ubg77.github.io" 
+                sandbox="allow-scripts allow-same-origin allow-forms"
+                allowfullscreen>
+        </iframe>
     </div>
 
     <script>
         function skip() {
             const frame = document.getElementById('mad-frame').contentWindow;
-            // Native skip command for Drive Mad 2.0
             frame.postMessage({ type: 'keydown', keyCode: 39 }, '*');
-            console.log("2.0 Hack: Redirect Blocked & Level Skipped.");
         }
-        
-        // Auto-focus to prevent clicking twice to start
         window.onload = () => document.getElementById('mad-frame').focus();
     </script>
 </body>
