@@ -8,21 +8,23 @@
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
         iframe { width: 100%; height: 100%; border: none; }
     </style>
+    <script>
+        // Spoof Poki environment to prevent loading blocks
+        window.assgdd = {
+            "ancestorOrigins": { "0": "https://games.poki.com", "1": "https://poki.com" },
+            "href": "https://poki.com/en/g/drive-mad"
+        };
+    </script>
 </head>
 <body>
-    <!-- Direct Poki Game Source -->
     <iframe 
         id="game-frame"
         src="https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com/cc1bc57a-e355-4696-97c2-097bf6188606/index.html" 
         sandbox="allow-scripts allow-same-origin allow-forms"
         allowfullscreen>
     </iframe>
-
     <script>
-        // Auto-focuses the game so you can start driving immediately
-        window.onload = () => {
-            document.getElementById('game-frame').focus();
-        };
+        window.onload = () => document.getElementById('game-frame').focus();
     </script>
 </body>
 </html>
